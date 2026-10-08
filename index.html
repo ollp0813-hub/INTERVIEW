@@ -433,6 +433,10 @@ kbd{font:500 .75rem var(--f-mono);padding:1px 6px;border:1px solid var(--line);b
 .seg-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .seg button{display:grid;gap:1px;padding:8px 6px;border-radius:9px;border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:center;transition:all .18s var(--ease)}
 .seg-2 button{text-align:left;padding:10px 12px}
+.src-seg{margin:2px 0 12px}.src-seg button{padding:12px 14px}.src-seg button b{font-size:.92rem}
+.src-hint{font-size:.84rem;color:var(--muted);line-height:1.6;margin:0 0 10px}.src-hint b{color:var(--ink);font-weight:600}
+textarea#aiQuestions{min-height:200px;line-height:1.7;font-size:.9rem;margin-top:10px}
+#import-out:empty,#script-out:empty{display:none}
 .seg button b{font-size:.86rem}.seg button small{font-size:.72rem;color:var(--muted)}
 .seg button:not(:disabled):hover{border-color:var(--accent);transform:translateY(-1px)}
 .seg button:disabled{opacity:.4;cursor:not-allowed}
@@ -858,28 +862,38 @@ textarea#answer{min-height:120px;border-radius:12px}
       <div class="q-layout">
         <div class="q-main">
           <div class="sheet">
-            <div class="sub-step"><span class="ss-n">1</span><div><h3>질문 만들기</h3><p>준비한 질문을 그대로 붙여 넣으세요. 한 줄에 하나, 번호가 있어도 괜찮아요.</p></div></div>
-            <textarea id="questions" class="box" spellcheck="false" aria-label="예상 질문 목록" placeholder="예)&#10;1분 자기소개를 해 주세요.&#10;우리 학과에 지원한 동기는 무엇인가요?&#10;&#10;전공 질문&#10;- 열역학 제1법칙을 설명해 주세요."></textarea>
+            <div class="sub-step"><span class="ss-n">1</span><div><h3>질문 만들기</h3><p>어떤 질문으로 연습할지 먼저 고르세요.</p></div></div>
+            <input type="hidden" id="qSource" value="mine">
+            <div class="seg seg-2 src-seg" id="src-seg" role="group" aria-label="연습할 질문">
+              <button type="button" data-src="mine" aria-pressed="true"><b>내 예상 질문</b><small>정리한 질문·답변으로 연습</small></button>
+              <button type="button" data-src="ai" aria-pressed="false"><b>AI 예상 질문</b><small>AI가 만든 질문으로 연습</small></button>
+            </div>
+            <div id="src-mine" class="src-pane">
+              <p class="src-hint">질문과 답변을 정리한 문서를 <b>통째로</b> 붙여 넣으세요. 번호 줄은 질문, 그 아래는 답변으로 나눠 <b>분류·답변 정리까지 자동으로 연결</b>해요. 질문만 있어도 돼요.</p>
+              <textarea id="questions" class="box" spellcheck="false" aria-label="내 예상 질문 목록" placeholder="예)&#10;1. 1분 자기소개&#10;안녕하십니까, 저는 … (내 답변)&#10;2. 우리 학과에 지원한 이유는?&#10;저는 … (내 답변)&#10;&#10;질문만 한 줄에 하나씩 적어도 돼요."></textarea>
+              <p class="mic-out" id="import-out" aria-live="polite"></p>
+            </div>
+            <div id="src-ai" class="src-pane" hidden>
+              <p class="src-hint">지원 정보와 첨부한 서류를 바탕으로 AI가 질문을 만들어요. 여기 질문은 내 예상 질문과 <b>따로</b> 보관돼요.</p>
+              <div class="field full" style="margin:2px 0 12px"><span class="flabel">어떤 질문을 만들까요?</span><div class="toggles" id="gen-cats"></div></div>
+              <div class="gen-row">
+                <div class="field"><label for="gen-n">개수</label><select id="gen-n"><option>5</option><option selected>8</option><option>10</option><option>15</option></select></div>
+                <div class="row-btns"><button class="btn primary small" id="btn-gen-ai" type="button">AI로 질문 만들기</button><button class="btn small" id="btn-gen-tpl" type="button">AI 없이 기본 질문</button></div>
+              </div>
+              <p class="mic-out" id="gen-out" aria-live="polite"></p>
+              <textarea id="aiQuestions" class="box" spellcheck="false" aria-label="AI 예상 질문 목록" placeholder="AI로 만든 질문이 여기에 쌓여요. 필요 없는 줄은 지우면 돼요."></textarea>
+            </div>
             <div class="qmeta">
-              <span>질문 <b id="qtotal">0</b>개 · 이번 면접 <b id="qcount">0</b>개 · 약 <b id="qtime">0</b>분</span>
+              <span><span id="qsrc-label">내 질문</span> <b id="qtotal">0</b>개 · 이번 면접 <b id="qcount">0</b>개 · 약 <b id="qtime">0</b>분</span>
               <span class="row-btns">
                 <button class="btn small ghost" id="btn-sample" type="button">예시 넣기</button>
                 <button class="btn small ghost" id="btn-clear" type="button">비우기</button>
               </span>
             </div>
-            <details class="adv more">
-              <summary>AI로 질문 더 만들기 <span class="opt">지원 정보에 맞춰 목록 끝에 추가</span></summary>
-              <div class="field full" style="margin:10px 0 12px"><span class="flabel">어떤 질문을 만들까요?</span><div class="toggles" id="gen-cats"></div></div>
-              <div class="gen-row">
-                <div class="field"><label for="gen-n">개수</label><select id="gen-n"><option>5</option><option selected>8</option><option>10</option><option>15</option></select></div>
-                <div class="row-btns"><button class="btn primary small" id="btn-gen-ai" type="button">AI로 만들기</button><button class="btn small" id="btn-gen-tpl" type="button">기본 질문 넣기</button></div>
-              </div>
-              <p class="mic-out" id="gen-out" aria-live="polite"></p>
-            </details>
           </div>
 
           <div class="sheet">
-            <div class="sub-step"><span class="ss-n">2</span><div><h3>질문 확인</h3><p>분류가 맞는지 보고, 원하면 답변 정리를 붙여 힌트로 쓰세요.</p></div></div>
+            <div class="sub-step"><span class="ss-n">2</span><div><h3>질문 확인</h3><p>자동으로 나눈 분류와 질문 ↔ 답변 연결을 확인하세요.</p></div></div>
             <details class="adv more cat-review" id="cat-review">
               <summary>분류 확인 <span class="auto-chip" id="cat-review-sum">-</span></summary>
               <p class="hint" style="margin:8px 0 10px">틀린 분류는 바로 바꾸면 돼요. 바꾼 분류는 그 줄 앞에 [분류]로 적혀 고정돼요.</p>
@@ -892,10 +906,10 @@ textarea#answer{min-height:120px;border-radius:12px}
             </details>
             <details class="adv more" id="script-panel">
               <summary>답변 정리 <span class="opt">선택 · 키워드 힌트용</span> <span class="auto-chip" id="script-sync">-</span></summary>
-              <p class="hint" style="margin:8px 0 10px">내가 정리한 답변을 질문 순서대로 넣으면, 면접 중에 핵심 키워드만 힌트로 보여 줘요. 완성 문장은 보여 주지 않아요.</p>
+              <p class="hint" style="margin:8px 0 10px">위에 질문+답변 문서를 붙여 넣었다면 이미 연결돼 있어요. 답변만 따로 넣을 때는 <b>Q1.</b> 또는 <b>1.</b>처럼 질문 번호를 붙이거나, 질문과 답변을 함께 붙여 넣으세요. 면접 중에는 핵심 키워드만 힌트로 보여 줘요.</p>
               <textarea id="answerScripts" class="box" spellcheck="false" aria-label="질문별 답변 정리" placeholder="Q1. 첫 번째 질문의 답변 정리&#10;&#10;Q2. 두 번째 질문의 답변 정리&#10;&#10;Q3. -  (비워 둘 칸은 - 한 줄)"></textarea>
               <div class="script-help">
-                <div class="row-btns"><button class="btn small" id="btn-script-number" type="button">번호 자동으로 붙이기</button></div>
+                <div class="row-btns"><button class="btn small" id="btn-script-number" type="button">질문과 자동 연결</button></div><p class="mic-out" id="script-out" aria-live="polite"></p>
                 <details class="adv" id="script-map"><summary>짝 확인 (질문 ↔ 답변 정리)</summary><div class="plan-list" id="script-map-list"></div></details>
               </div>
             </details>
@@ -1124,7 +1138,9 @@ function sameQuestion(a, b) {
   if (na === nb) return true;
   const short = na.length < nb.length ? na : nb, long = na.length < nb.length ? nb : na;
   if (short.length >= 10 && long.includes(short)) return true;
-  return similarity(a, b) >= 0.9;
+  if (similarity(a, b) >= 0.9) return true;
+  const sa = spokenQuestion(a), sb = spokenQuestion(b);         // "자신의 장단점" ↔ "자신의 장단점을 말씀해 주세요."
+  return (sa !== a || sb !== b) && (normText(sa) === normText(sb) || similarity(sa, sb) >= 0.9);
 }
 /* 존댓말 검사 — 면접관이 말하기 전에 반말이 섞였는지 확인 */
 const POLITE_END = /(요|니다|니까|세요|십시오|시오|죠|지요)$/;
@@ -1141,12 +1157,94 @@ function politeOK(text) {
 }
 const politeOr = (text, fallback) => politeOK(text) ? String(text || '').trim() : fallback;
 /* 질문 문장 끝 정리 (뜻은 바꾸지 않음) */
-function asQuestion(text) {
-  const t = String(text || '').trim().replace(/\s+/g, ' ');
-  if (!t) return '';
-  if (/[?.!]$/.test(t)) return t;
-  return /(요|니다)$/.test(t) && !/(나요|가요|까요|는지요|인가요|있나요)$/.test(t) ? t + '.' : t + '?';
+/* 질문 문장 끝 정리 — 정리용 제목("자신의 장단점")이나 반말 질문("~했나?")도 면접관이 읽을 존댓말 질문으로 */
+function asQuestion(text) { return spokenQuestion(text); }
+/* ---------- 질문+답변 문서 인식 · 면접관 말투 정리 ---------- */
+/* 마지막 한글 글자에 받침이 있는지 */
+function hasBatchim(s) {
+  const m = String(s || '').match(/[가-힣](?=[^가-힣]*$)/);
+  if (!m) return null;
+  return (m[0].charCodeAt(0) - 0xAC00) % 28 !== 0;
 }
+const josa = (s, withB, without) => { const b = hasBatchim(s); return b === null ? without : b ? withB : without; };
+/* 끝에 붙은 메모용 괄호 — "(영제과)", "(포트폴리오 항목과 연결 가능한지 확인)" */
+const TAIL_NOTE = /\s*[(（]([^()（）]{1,40})[)）]\s*$/;
+function stripTailNote(t) {
+  let s = String(t || '').trim();
+  for (let k = 0; k < 2; k++) { const n = s.replace(TAIL_NOTE, '').trim(); if (n && n !== s) s = n; else break; }
+  return s;
+}
+/* 정리용 제목·반말 질문을 면접관이 그대로 읽을 수 있는 존댓말 질문으로 (뜻은 그대로) */
+function politeSentence(s, hadQ) {
+  s = s.trim();
+  if (!s) return '';
+  if (/(요|니다|니까|세요|십시오|시오|죠|지요)$/.test(s)) return s + (hadQ || /(나요|가요|까요|는지요|인가요|있나요|어요|은가요|던가요|ㄹ까요)$/.test(s) ? '?' : '.');
+  if (/^왜$/.test(s)) return '그 이유는 무엇인가요?';
+  if (/(나|는가|은가|인가|던가|까|ㄴ가|한가)$/.test(s)) return s + '요?';
+  if (/(했어|했니|하니|있어|없어|뭐야|어때|이야|거야)$/.test(s)) return s.replace(/(했어|했니)$/, '했나요').replace(/하니$/, '하나요').replace(/있어$/, '있나요').replace(/없어$/, '없나요').replace(/뭐야$/, '무엇인가요').replace(/어때$/, '어떤가요').replace(/(이야|거야)$/, '인가요') + '?';
+  if (/(해\s*줘|줘)$/.test(s)) return s.replace(/줘$/, '주세요') + '.';
+  if (/봐$/.test(s)) return s.replace(/봐$/, '보세요') + '.';
+  if (/(설명|소개|말|얘기|이야기|정리|요약|비교|답)해$/.test(s)) return s + ' 주세요.';
+  if (/(은|는)$/.test(s)) return s + ' 무엇인가요?';
+  if (/(는지|은지|인지|할지|을지|일지|던지)$/.test(s)) return s + ' 말씀해 주세요.';
+  if (/하고\s*싶은\s*말$/.test(s)) return s + '이 있다면 말씀해 주세요.';
+  if (/자기\s*소개$/.test(s)) return s + '를 해 주세요.';
+  if (/다$/.test(s)) return s + '.';
+  if (/[가-힣]$/.test(s)) return s + josa(s, '을', '를') + ' 말씀해 주세요.';
+  if (/[A-Za-z0-9]$/.test(s)) return s + '에 대해 말씀해 주세요.';
+  return s + (hadQ ? '?' : '');
+}
+function spokenQuestion(text) {
+  let t = String(text || '').trim().replace(/\s+/g, ' ');
+  if (!t) return '';
+  t = stripTailNote(t);
+  t = t.replace(/([가-힣A-Za-z0-9])\s*\/\s*(?=[가-힣A-Za-z])/g, '$1, ');                          // 영상/영화 → 영상, 영화
+  t = t.split(/\s*\+\s*/).reduce((acc, p) => acc ? acc + josa(acc, '과', '와') + ' ' + p : p, '');   // 자기소개 + 지원동기 → 자기소개와 지원동기
+  t = t.replace(/(나|는가|은가|인가|까)\s*[—–]\s*/g, '$1? ');                                     // "~했나 — 지금…" → 두 문장
+  const parts = t.match(/[^?？!.]+[?？!.]*/g) || [t];
+  return parts.map(p => {
+    const hadQ = /[?？]/.test(p);
+    const core = p.replace(/[?？!.\s]+$/, '').trim();
+    return politeSentence(core, hadQ);
+  }).filter(Boolean).join(' ');
+}
+
+/* 질문 + 답변을 함께 정리한 문서인지 보고 나누기
+   1. 질문 / 답변 여러 줄 / 2. 질문 / 답변 … , "Q1. 질문", "Q: 질문 / A: 답변" 형식 */
+const QA_HEAD = /^\s*(?:\[?\s*Q\s*(\d{1,3})\s*\]?\s*[.):：\-]?|(\d{1,3})\s*[.)]|Q\s*[.:：]|질문\s*(\d{1,3})?\s*[.:：])\s*(.*)$/i;
+const QA_ANS = /^\s*(?:A\s*\d*\s*[.:：]|답변?\s*\d*\s*[.:：]|→\s*|ㄴ\s+)/i;
+function questionish(t) {
+  const s = stripTailNote(String(t || '').replace(/^\s*(?:\[[^\]]{1,15}\]|【[^】]{1,15}】)\s*/, '')).trim();
+  if (s.length < 3 || !/[가-힣]/.test(s)) return false;
+  if (/[?？]$/.test(s)) return true;
+  if (/(다|요|죠)[.!…]?$/.test(s) || /[.!]$/.test(s)) return false;
+  return s.length <= 80;
+}
+function parseQADoc(raw) {
+  const lines = String(raw || '').replace(/\r/g, '').split('\n');
+  const items = [];
+  let cur = null, prev = 0, pre = 0, numberedBody = 0, section = null;
+  for (const line of lines) {
+    const l = line.trim();
+    if (!l) continue;
+    const m = l.match(QA_HEAD);
+    if (m) {
+      const num = +(m[1] || m[2] || m[3] || 0), text = (m[4] || '').trim();
+      const seqOK = !num || !prev || (num > prev && num <= prev + 5);
+      if (text && seqOK && questionish(text)) { cur = { num, q: text, a: [], section }; items.push(cur); if (num) prev = num; continue; }
+      if (num) numberedBody++;
+    }
+    const h = headerCat(l);
+    if (h !== null && (!cur || cur.a.length)) { section = h; cur = null; continue; }   // "■ 공통 질문" 같은 제목 줄
+    if (cur) cur.a.push(l.replace(QA_ANS, '').trim());
+    else pre++;
+  }
+  const withAns = items.filter(it => { const a = it.a.join(' '); return a.replace(/\s/g, '').length >= 15 && !it.a.every(x => /[?？]$/.test(x)); });
+  if (items.length < 2 || withAns.length < Math.max(2, Math.ceil(items.length * 0.5))) return null;
+  if (numberedBody > items.length * 0.3 || pre > 6) return null;
+  return items.map(it => ({ q: it.q, a: it.a.filter(Boolean).join('\n'), section: it.section }));
+}
+
 
 function lowerBound(arr, x) { let lo = 0, hi = arr.length; while (lo < hi) { const m = (lo + hi) >> 1; if (arr[m] < x) lo = m + 1; else hi = m; } return lo; }
 
@@ -1267,7 +1365,7 @@ const S = { run: 0, phase: 'idle', pending: null, cfg: null, t0: 0, audio: null,
   planCache: null, aiCats: {}, aiCatsVer: 0, aiStatus: 'none', aiMsg: '' };
 
 const KEY = 'interview-coach.v2', HKEY = 'interview-coach.history.v2', V1KEY = 'interview-coach.v1', TKEY = 'interview-coach.training.v4', SKEY = 'interview-coach.sessions.v4';
-const FIELDS = ['school', 'phrasing', 'univ', 'dept', 'track', 'itype', 'memo', 'record', 'questions', 'answerScripts', 'followups', 'target', 'order', 'voice', 'rate', 'model', 'fastmodel', 'gen-n', 'serverUrl'];
+const FIELDS = ['school', 'phrasing', 'univ', 'dept', 'track', 'itype', 'memo', 'record', 'questions', 'answerScripts', 'aiQuestions', 'qSource', 'followups', 'target', 'order', 'voice', 'rate', 'model', 'fastmodel', 'gen-n', 'serverUrl'];
 const CHECKS = ['autorec', 'opening', 'recordAudio', 'subtitles', 'remember'];
 const readJSON = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
 const writeJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
@@ -1412,6 +1510,7 @@ const defaultQuestions = () => DEFAULT_SET.map(([c, i]) => `[${c}] ${fillTpl(TPL
 if (!$('#questions').value.trim()) $('#questions').value = defaultQuestions();
 if ($('#answerScripts') && saved.answerScripts) $('#answerScripts').value = saved.answerScripts;
 if ($('#answerScripts').value.trim()) $('#script-panel').open = true;   // 답변 정리가 있으면 펼쳐 둠
+setSource($('#qSource').value, true);
 
 
 /* 탭 */
@@ -1478,11 +1577,21 @@ function parseAnswerScripts() {
   let out = [];
   if (raw.trim()) {
     const lines = raw.replace(/\r/g, '').split('\n');
+    const qaDoc = parseQADoc(raw);
     const markRe = /^\s*\[?\s*Q\s*(\d{1,3})\s*\]?\s*[:.)\-]?\s*(.*)$/i;
-    if (lines.some(l => markRe.test(l))) {
+    const numRe = /^\s*(\d{1,3})\s*[.)]\s+(.*)$/;
+    const nums = lines.map(l => l.match(numRe)).filter(Boolean).map(m => +m[1]);
+    const numbered = !lines.some(l => markRe.test(l)) && nums.length >= 2 && nums.every((n, i) => !i || n > nums[i - 1]);
+    if (qaDoc) {
+      // 질문과 답변을 같이 붙여 넣은 경우: 질문 문장으로 내 질문 목록과 짝을 맞춤
+      const mine = mineQuestionTexts();
+      qaDoc.forEach((it, k) => { const i = mine.findIndex(t => sameQuestion(t, it.q)); const at = i >= 0 ? i : k; if (out[at] == null) out[at] = it.a; });
+      out = Array.from({ length: out.length }, (_, i) => out[i] || '');
+    } else if (lines.some(l => markRe.test(l)) || numbered) {
+      const re = numbered ? numRe : markRe;
       let cur = -1;
       lines.forEach(l => {
-        const m = l.match(markRe);
+        const m = l.match(re);
         if (m) { cur = +m[1] - 1; out[cur] = (m[2] || '').trim(); }
         else if (cur >= 0) out[cur] = ((out[cur] || '') + '\n' + l).trim();
       });
@@ -1543,8 +1652,8 @@ function renderScriptMap() {
 /* 질문 목록 파싱 — 같은 질문이 두 줄 이상 있으면 처음 것만 사용. id는 목록에서의 순서(Q번호)와 같음 */
 let _qCache = { raw: null, scripts: null, out: [] };
 function parseQuestions() {
-  const raw = $('#questions').value, scripts = parseAnswerScripts();
-  if (raw === _qCache.raw && scripts === _qCache.scripts && _qCache.ver === S.aiCatsVer) return _qCache.out;
+  const ai = isAiSource(), raw = qBox().value, scripts = ai ? [] : parseAnswerScripts(), dept = ($('#dept')?.value || '').replace(/\s+/g, '');
+  if (raw === _qCache.raw && scripts === _qCache.scripts && _qCache.ver === S.aiCatsVer && _qCache.dept === dept) return _qCache.out;
   const seen = new Set(), out = [];
   let section = null;                       // 제목 줄로 정한 분류 (null = 없음, '' = 공통)
   raw.split('\n').forEach((line, lineIndex) => {
@@ -1573,15 +1682,58 @@ function parseQuestions() {
       const strong = strongCat(l);              // "마지막으로 하고 싶은 말"처럼 분명한 질문은 제목 줄보다 내용을 따름
       if (strong && strong !== section) { cat = strong; src = 'auto'; } else { cat = section; src = 'section'; }
     }
-    if (src === 'none') { cat = guessCat(l); src = cat ? 'auto' : 'none'; }
+    if (src === 'none') { cat = docRefCat(l) || guessCat(l) || activityCat(l); src = cat ? 'auto' : 'none'; }
     if (src === 'auto' || src === 'none') { const ai = S.aiCats[normText(l)]; if (ai) { cat = ai; src = 'ai'; } }   // AI가 나눈 분류가 있으면 우선
     const id = out.length + 1;              // Q번호 = 답변 정리 번호 (제목 줄은 세지 않음)
     const key = normText(l);
     const dup = seen.has(key); seen.add(key);
-    out.push({ id, lineIndex, text: l, cat, src, hints: S.hints[l] || [], answerScript: scripts[id - 1] || '', dup });
+    const say = spokenQuestion(l), dtag = deptTagOf(l);
+    out.push({ id, lineIndex, text: l, say, cat, src, hints: S.hints[l] || [], answerScript: scripts[id - 1] || '', dup, dupWhy: dup ? 'same' : '', deptTag: dtag });
   });
-  _qCache = { raw, scripts, out, ver: S.aiCatsVer };
+  // "(영제)", "(방콘)"처럼 학과 표시가 붙은 질문: 지원 학과와 다른 쪽은 빼고, 소리 내어 읽으면 같은 질문은 한 번만
+  // 지원 학과가 비어 있으면 목록에서 처음 나온 학과 표시를 기준으로 삼음 (한 면접에 두 학과용 질문이 섞이지 않게)
+  const firstTag = out.find(q => q.deptTag)?.deptTag.replace(/과$/, '') || '';
+  const sameTag = (a, b) => { a = a.replace(/과$/, ''); b = b.replace(/과$/, ''); return a.startsWith(b) || b.startsWith(a); };
+  out.forEach(q => { if (!q.dup && q.deptTag && (dept ? !deptMatches(q.deptTag, dept) : !sameTag(q.deptTag, firstTag))) { q.dup = true; q.dupWhy = 'dept'; } });
+  const bySay = new Map();
+  out.forEach(q => { if (q.dup) return; const k = normText(q.say); const first = bySay.get(k); if (!first) { bySay.set(k, q); return; } q.dup = true; q.dupWhy = 'same'; });
+  _qCache = { raw, scripts, out, ver: S.aiCatsVer, dept };
   return out;
+}
+/* 지금 연습할 질문 목록 (내 질문 / AI 질문) */
+function isAiSource() { return ($('#qSource')?.value || 'mine') === 'ai'; }
+function qBox() { return $(isAiSource() ? '#aiQuestions' : '#questions'); }
+/* 줄 목록 → 질문 문장만 (번호·분류 표시 제거, 제목 줄 제외) */
+function boxQuestionTexts(raw) {
+  return String(raw || '').split('\n').map(l => l.trim()).filter(l => l && headerCat(l) === null)
+    .map(l => l.replace(/^\s*(Q\s*\d+\s*[.):\-]?|\d+\s*[.)]|[-*•·▶▷]+)\s*/i, '').replace(TAG_RE, '').replace(/^\s*(Q\s*\d+\s*[.):\-]?|\d+\s*[.)])\s*/i, '').trim()).filter(Boolean);
+}
+function mineQuestionTexts() { return boxQuestionTexts($('#questions').value); }
+/* 질문 끝 괄호의 학과 표시: (영제) (방콘제과) … 분류 이름이나 메모는 제외 */
+function deptTagOf(text) {
+  const m = String(text || '').match(TAIL_NOTE); if (!m) return '';
+  const t = m[1].replace(/\s+/g, '');
+  if (!/^[가-힣]{2,6}$/.test(t) || /확인|연결|참고|메모|예상|체크|중요|필수|추가|공통|질문|답변|꼬리/.test(t) || headerCat(t) !== null || CAT_FUZZY.some(([re]) => re.test(t))) return '';
+  return t;
+}
+/* "방콘제과" ↔ "방송콘텐츠제작과": 줄임말 글자가 학과 이름에 순서대로 들어 있으면 같은 학과 */
+function deptMatches(tag, dept) {
+  const t = tag.replace(/과$/, ''); let i = 0;
+  for (const ch of dept) if (ch === t[i]) i++;
+  return i >= t.length;
+}
+/* 자기소개서 문장을 짚는 질문: "~하고 싶다"고 했는데 / ~라고 했나 */
+function docRefCat(t) {
+  return /(다|라)\s*["”’'」』]?\s*고\s*(했|하셨|쓰셨|썼|적었|적으셨)/.test(t) ? '자기소개서' : '';
+}
+/* 분류가 안 잡힌 경험 질문: 만든 작업이면 포트폴리오, 활동이면 자기소개서, 병행·시간 관리는 인성 */
+function activityCat(t) {
+  if (/병행|시간\s*관리|우선\s*순위/.test(t)) return '인성';
+  const make = /영상|다큐|단편|숏폼|릴스|쇼츠|채널|계정|편집|촬영|연출|기획|콘텐츠|작업|제작|업로드|클라이언트|감독|섭외|배우|시나리오|콘티|디자인|그림|사진|공연|무대|녹음/;
+  if (make.test(t) && /(생각하는|생각하나|생각합|중요한|중요하다고|요소|차이)/.test(t)) return '전공';
+  if (make.test(t)) return '포트폴리오';
+  if (/활동|동아리|방송부|학생회|캠프|대회|공모전|봉사|차장|부장|회장|팀/.test(t)) return '자기소개서';
+  return '';
 }
 function updateCount(withStatus = true) {
   if (withStatus) return updateQuestionSelectorStatus();
@@ -1599,19 +1751,21 @@ function updateCount(withStatus = true) {
 }
 /* 새 질문은 항상 목록 맨 끝에 붙임. 기존 줄 순서를 바꾸면 답변 정리(Q번호)가 어긋나기 때문.
    마무리 질문은 면접할 때 자동으로 맨 마지막에 물어요. */
-function appendQuestions(lines) {
-  const cur = $('#questions').value.replace(/\s+$/, '');
-  const existing = parseQuestions().map(q => q.text);
+function appendQuestions(lines, target) {
+  const box = target === 'ai' ? $('#aiQuestions') : target === 'mine' ? $('#questions') : qBox();
+  const cur = box.value.replace(/\s+$/, '');
+  const existing = boxQuestionTexts(box.value);
   const add = [];
   lines.forEach(l => {
     const t = l.replace(TAG_RE, '').trim();
     if (!existing.some(x => sameQuestion(x, t)) && !add.some(x => sameQuestion(x.replace(TAG_RE, '').trim(), t))) add.push(l);
   });
-  const before = $('#questions').value;
+  const before = box.value, toOther = box !== qBox();
   if (add.length) {
-    $('#questions').value = (cur ? cur + '\n' : '') + add.join('\n');
-    showToast(`질문 ${add.length}개를 목록 끝에 추가했어요.`, '되돌리기', () => { $('#questions').value = before; _lastQRaw = null; scheduleSetupUpdate(); showToast('추가를 되돌렸어요.'); });
-    _lastQRaw = $('#questions').value; scheduleAiClassify();
+    box.value = (cur ? cur + '\n' : '') + add.join('\n');
+    if (toOther) showToast(`AI 예상 질문에 ${add.length}개를 추가했어요.`, 'AI 질문으로 연습', () => { setSource('ai'); selectTab('tab-q'); });
+    else showToast(`질문 ${add.length}개를 목록 끝에 추가했어요.`, '되돌리기', () => { box.value = before; _lastQRaw = null; scheduleSetupUpdate(); showToast('추가를 되돌렸어요.'); });
+    _lastQRaw = null; _bulkQ = $('#questions').value; scheduleAiClassify();
   }
   renderQuestionSelector(); save();
   return add.length;
@@ -1619,20 +1773,25 @@ function appendQuestions(lines) {
 $('#btn-sample').onclick = () => {
   $('#questions').value = defaultQuestions();
   if ($('#answerScripts')) $('#answerScripts').value = '';
+  _lastQRaw = null; _lastSRaw = ''; _bulkQ = $('#questions').value; $('#import-out').textContent = '';
   renderQuestionSelector(); save();
 };
 $('#btn-clear').onclick = () => {
-  $('#questions').value = '';
-  if ($('#answerScripts')) $('#answerScripts').value = '';
-  renderQuestionSelector(); save(); $('#questions').focus();
+  const box = qBox(), before = box.value, beforeS = $('#answerScripts').value, ai = isAiSource();
+  box.value = '';
+  if (!ai && $('#answerScripts')) $('#answerScripts').value = '';
+  _lastQRaw = null; _lastSRaw = $('#answerScripts').value; _bulkQ = $('#questions').value; $('#import-out').textContent = '';
+  renderQuestionSelector(); save(); box.focus();
+  if (before.trim()) showToast(ai ? 'AI 질문을 비웠어요.' : '질문과 답변 정리를 비웠어요.', '되돌리기', () => { box.value = before; if (!ai) $('#answerScripts').value = beforeS; _lastQRaw = null; _lastSRaw = beforeS; _bulkQ = $('#questions').value; renderQuestionSelector(); save(); });
 };
 
 /* 준비 화면 입력 처리 — 키를 누를 때마다 전체 저장·재계산하지 않고 잠깐 모아서 한 번에 처리 */
-let _setupTimer = 0, _lastQRaw = null;
+let _setupTimer = 0, _lastQRaw = null, _lastSRaw = null, _bulkQ = null;
 function scheduleSetupUpdate() {
   clearTimeout(_setupTimer);
   _setupTimer = setTimeout(() => {
-    const raw = $('#questions').value;
+    if (checkBulkImport()) return;
+    const raw = $('#qSource').value + '|' + qBox().value;
     if (raw !== _lastQRaw) { _lastQRaw = raw; renderQuestionSelector(); scheduleAiClassify(); }   // 질문이 바뀌면 분류 목록 갱신 + AI 분류 예약
     else updateQuestionSelectorStatus();
     updateMode(); save();
@@ -1652,10 +1811,101 @@ document.addEventListener('change', e => {
 });
 $('#script-map').addEventListener('toggle', () => { if ($('#script-map').open) renderScriptMap(); });
 $('#btn-script-number').onclick = () => {
+  const out = $('#script-out');
+  const doc = parseQADoc($('#answerScripts').value);
+  if (doc) { importQADoc(doc, 'scripts'); return; }
   const qs = parseQuestions(); if (!qs.length) return;
+  const blocks = parseAnswerScripts().filter(Boolean).length;
   $('#answerScripts').value = qs.map(q => `Q${q.id}. ${q.answerScript ? q.answerScript : '-'}`).join('\n\n');
+  _lastSRaw = $('#answerScripts').value;
   scheduleSetupUpdate(); $('#script-map').open = true; renderScriptMap();
+  const linked = parseQuestions().filter(q => q.answerScript).length;
+  if (out) out.textContent = `질문 ${qs.length}개 중 ${linked}개에 답변을 연결했어요.` + (blocks > qs.length ? ` 답변이 ${blocks - qs.length}개 더 많아요. 아래 "짝 확인"에서 순서를 확인해 주세요.` : '');
 };
+
+/* ---------- 질문 + 답변 문서 한 번에 가져오기 ----------
+   번호 줄 = 질문, 그 아래 줄 = 답변. 내 예상 질문 목록과 답변 정리를 함께 새로 채우고 Q번호로 연결함.
+   이미 목록에 있던 질문과 같은 질문은 직접 적어 둔 [분류]를 그대로 가져감. */
+function importQADoc(items, from, prev = {}) {
+  const before = { q: prev.q ?? $('#questions').value, s: prev.s ?? $('#answerScripts').value, src: $('#qSource').value };
+  const old = parseQuestionsOf(before.q);
+  const lines = [], scripts = [];
+  items.forEach((it, i) => {
+    const prevQ = old.find(o => o.src === 'tag' && sameQuestion(o.text, it.q));
+    const tag = prevQ ? prevQ.cat : (it.section || '');
+    lines.push((tag ? `[${tag}] ` : '') + it.q.trim());
+    scripts.push(`Q${i + 1}. ${(it.a || '').trim() || '-'}`);
+  });
+  setSource('mine', true);
+  $('#questions').value = lines.join('\n');
+  $('#answerScripts').value = scripts.join('\n\n');
+  _lastQRaw = null; _lastSRaw = $('#answerScripts').value; _bulkQ = $('#questions').value; S.planCache = null;
+  renderQuestionSelector(); scheduleAiClassify(); save();
+  const qs = parseQuestions(), linked = qs.filter(q => q.answerScript).length;
+  const skipped = qs.filter(q => q.dup).length;
+  const tags = qs.map(q => q.deptTag).filter(Boolean).reduce((a, t) => a.some(x => x.replace(/과$/, '').startsWith(t.replace(/과$/, '')) || t.replace(/과$/, '').startsWith(x.replace(/과$/, ''))) ? a : a.concat(t), []);
+  const msg = `질문 ${qs.length}개 · 답변 ${linked}개를 연결했어요.` + (skipped ? ` 같은 질문이나 다른 학과용 질문 ${skipped}개는 이번 면접에서 빼요.` : '');
+  const deptNote = tags.length > 1 ? ` 학과 표시(${tags.join('·')})가 붙은 질문은 ① 지원 정보의 학과에 맞는 것만 물어요${$('#dept').value.trim() ? '' : ' — 학과를 비워 두면 처음 나온 학과 기준'}.` : '';
+  $('#import-out').textContent = msg + ' 분류는 질문과 답변 내용을 보고 자동으로 나눴어요.' + deptNote;
+  if ($('#script-out')) $('#script-out').textContent = '';
+  const oldN = boxQuestionTexts(before.q).length;
+  showToast(msg + (oldN && from !== 'scripts-same' ? ` 기존 목록 ${oldN}개는 되돌리기로 복구돼요.` : ''), '되돌리기', () => {
+    $('#questions').value = before.q; $('#answerScripts').value = before.s; setSource(before.src, true);
+    _lastQRaw = null; _lastSRaw = before.s; _bulkQ = before.q; $('#import-out').textContent = '';
+    renderQuestionSelector(); save(); showToast('가져오기를 되돌렸어요.');
+  }, 8000);
+  if (from === 'scripts') { $('#script-map').open = true; renderScriptMap(); }
+  return qs.length;
+}
+/* 목록 글만 보고 분류 표시를 읽음 (가져오기 전 [분류] 유지용) */
+function parseQuestionsOf(raw) {
+  return String(raw || '').split('\n').map(l => l.trim().replace(/^\s*(Q\s*\d+\s*[.):\-]?|\d+\s*[.)]|[-*•·▶▷]+)\s*/i, '')).filter(Boolean).map(l => {
+    const m = l.match(/^\[([^\]]{1,15})\]\s*(.*)$/);
+    return m ? { text: m[2], cat: resolveCat(m[1]), src: 'tag' } : { text: l, cat: '', src: 'none' };
+  });
+}
+/* 붙여 넣는 순간 질문+답변 문서인지 확인 */
+['#questions', '#answerScripts'].forEach(sel => {
+  $(sel).addEventListener('paste', e => {
+    const text = e.clipboardData?.getData('text/plain') || '';
+    const doc = parseQADoc(text);
+    if (!doc) return;
+    e.preventDefault();
+    importQADoc(doc, sel === '#answerScripts' ? 'scripts' : 'questions');
+  });
+});
+/* 붙여 넣기 말고 한꺼번에 바뀐 경우(끌어다 놓기·자동 입력)도 같은 처리 */
+function checkBulkImport() {
+  const q = $('#questions').value, sc = $('#answerScripts').value;
+  if (_bulkQ === null) _bulkQ = '';
+  if (q !== _bulkQ) {
+    const was = _bulkQ, grew = q.length - was.length > 80; _bulkQ = q;
+    if (grew) { const d = parseQADoc(q); if (d) { importQADoc(d, 'questions', { q: was }); _bulkQ = $('#questions').value; return true; } }
+  }
+  if (sc !== _lastSRaw) {
+    const was = _lastSRaw || '', grew = sc.length - was.length > 80; _lastSRaw = sc;
+    if (grew) { const d = parseQADoc(sc); if (d) { importQADoc(d, 'scripts', { s: was }); return true; } }
+  }
+  return false;
+}
+
+/* ---------- 연습할 질문 고르기: 내 예상 질문 / AI 예상 질문 ---------- */
+function setSource(src, silent) {
+  src = src === 'ai' ? 'ai' : 'mine';
+  $('#qSource').value = src;
+  $$('#src-seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.src === src));
+  $('#src-mine').hidden = src === 'ai'; $('#src-ai').hidden = src !== 'ai';
+  $('#script-panel').hidden = src === 'ai';
+  $('#btn-sample').hidden = src === 'ai';
+  $('#qsrc-label').textContent = src === 'ai' ? 'AI 질문' : '내 질문';
+  if (!silent) { _lastQRaw = null; S.planCache = null; renderQuestionSelector(); scheduleAiClassify(); save(); }
+}
+$('#src-seg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-src]'); if (!b) return;
+  setSource(b.dataset.src);
+  if (b.dataset.src === 'ai' && !boxQuestionTexts($('#aiQuestions').value).length)
+    $('#gen-out').textContent = aiReady() ? '"AI로 질문 만들기"를 누르면 지원 정보·서류에 맞춘 질문을 만들어요.' : 'AI 질문은 API 키가 필요해요. 키가 없으면 "AI 없이 기본 질문"으로 연습할 수 있어요.';
+});
 
 const rateOut = () => $('#rate-out').textContent = (+$('#rate').value).toFixed(2) + '×';
 $('#rate').addEventListener('input', rateOut); rateOut();
@@ -1691,7 +1941,7 @@ function renderReady(total, n, mins) {
   const items = [
     { go: 'tab-info', focus: '#univ', st: info ? 'ok' : 'opt', title: '지원 정보', text: info ? `${info} · ${isCollege() ? '전문대 면접' : '4년제 면접'}` : '학교·학과를 적으면 질문이 더 정확해져요 (선택)' },
     { go: 'tab-docs', focus: '#portfolioPdf', st: docsN ? 'ok' : 'opt', title: '서류', text: docsN ? `서류 ${docsN}개 반영` : '없어도 돼요 · 올리면 AI가 질문을 만들어요' },
-    { go: 'tab-q', focus: '#questions', st: total ? 'ok' : 'todo', title: '예상 질문', text: total ? `${total}개 정리 · 이번 면접 ${n}개` : '붙여 넣거나, 비워 두면 예시 질문으로 시작해요' },
+    { go: 'tab-q', focus: isAiSource() ? '#btn-gen-ai' : '#questions', st: total ? 'ok' : 'todo', title: isAiSource() ? 'AI 예상 질문' : '내 예상 질문', text: total ? `${total}개 · 이번 면접 ${n}개` + (isAiSource() ? '' : ` · 답변 연결 ${parseQuestions().filter(q => q.answerScript && !q.dup).length}개`) : (isAiSource() ? 'AI로 질문을 만들어 주세요 (키가 없으면 기본 질문)' : '질문·답변 문서를 붙여 넣거나, 비워 두면 예시 질문으로 시작해요') },
     { go: 'tab-set', focus: '#apikey', st: !aiReady() ? 'opt' : ({ ok: 'ok', checking: 'wait', fail: 'bad' }[S.aiStatus] || 'wait'), title: 'AI 연결', text: aiText },
     { go: 'tab-set', focus: '#btn-testmic', st: SR ? 'ok' : 'opt', title: '음성 답변', text: SR ? '말로 답하면 자동으로 받아 적어요' : '이 브라우저는 입력으로 진행 (Chrome 권장)' }
   ];
@@ -2173,12 +2423,12 @@ function updateCatReviewSummary() {
 function renderCatReview() {
   const list = $('#cat-list'); if (!list) return;
   const qs = parseQuestions();
-  list.innerHTML = qs.map(q => `<div class="plan-item"><span class="num">Q${q.id}</span><select data-line="${q.lineIndex}" aria-label="Q${q.id} 분류">${catOptions(q.cat)}</select><span class="qt">${esc(q.text)}<span class="cat-src ${q.src}">· ${SRC_LABEL[q.src]}${q.dup ? ' · 중복' : ''}</span></span></div>`).join('') || '<p class="sub" style="margin:0">질문을 적으면 여기에 분류가 보여요.</p>';
+  list.innerHTML = qs.map(q => `<div class="plan-item"><span class="num">Q${q.id}</span><select data-line="${q.lineIndex}" aria-label="Q${q.id} 분류">${catOptions(q.cat)}</select><span class="qt">${esc(q.text)}<span class="cat-src ${q.src}">· ${SRC_LABEL[q.src]}${q.dup ? (q.dupWhy === 'dept' ? ' · 다른 학과용' : ' · 중복') : ''}${q.answerScript ? ' · 답변 연결' : ''}</span></span></div>`).join('') || '<p class="sub" style="margin:0">질문을 적으면 여기에 분류가 보여요.</p>';
 }
 /* 줄 앞의 분류 표시를 바꿈 — 줄 순서는 그대로라 답변 정리 번호가 어긋나지 않음 */
 const TAG_RE = /^(\s*)(?:\[[^\]]{1,15}\]|【[^】]{1,15}】|<[^>]{1,15}>)\s*/;
 function setLineTags(map) {
-  const lines = $('#questions').value.split('\n');
+  const box = qBox(), lines = box.value.split('\n');
   Object.entries(map).forEach(([i, cat]) => {
     const line = lines[+i]; if (line == null) return;
     // 번호·글머리표(1. / Q3. / -)는 그대로 앞에 두고, 그 뒤에 [분류]를 넣음
@@ -2187,8 +2437,8 @@ function setLineTags(map) {
     const body = line.slice(pm ? pm[0].length : 0).replace(TAG_RE, '').trim();
     lines[+i] = prefix + (cat ? `[${cat}] ` : '') + body;
   });
-  $('#questions').value = lines.join('\n');
-  _lastQRaw = null; scheduleSetupUpdate();
+  box.value = lines.join('\n');
+  _lastQRaw = null; _bulkQ = $('#questions').value; scheduleSetupUpdate();
 }
 document.addEventListener('change', e => { const sel = e.target.closest('#cat-list select[data-line]'); if (sel) setLineTags({ [sel.dataset.line]: sel.value }); });
 $('#cat-review').addEventListener('toggle', () => { if ($('#cat-review').open) renderCatReview(); });
@@ -2204,6 +2454,7 @@ let _aiCatTimer = 0, _aiCatBusy = false;
 function scheduleAiClassify() { clearTimeout(_aiCatTimer); _aiCatTimer = setTimeout(() => aiClassify(false), 1800); }
 async function aiClassify(force) {
   if (_aiCatBusy || !aiReady() || (!force && S.aiStatus !== 'ok')) return -1;
+  const raw0 = qBox().value;
   const qs = parseQuestions().filter(q => !q.dup && (q.src === 'auto' || q.src === 'none' || (force && q.src === 'ai')) && (force || !S.aiCats[normText(q.text)]));
   if (!qs.length) return 0;
   _aiCatBusy = true; updateCatReviewSummary();
@@ -2215,11 +2466,16 @@ async function aiClassify(force) {
 [분류 목록] ${CANON_CATS.join(', ')}
 - 자기소개서: 자기소개서에 쓴 내용 확인 / 포트폴리오: 작품·작업물 / 전공: 학과 지식·직무 역량·실무 / 인성: 경험·태도·협업·갈등 / 생기부: 학교생활기록부 활동 / 마무리: 마지막 할 말
 - 반드시 위 목록 중 하나만 쓴다.
+- 질문 옆의 "답변 요약"은 지원자가 정리한 답이다. 질문만으로 애매하면 답변에 나온 경험(작품·활동·자기소개서 문장)을 보고 정한다.
+- 지원자가 직접 만든 작품·영상·채널·프로젝트를 묻는 질문은 포트폴리오, 자기소개서에 쓴 문장·활동을 확인하는 질문은 자기소개서, 학과 지식·직무 생각을 묻는 질문은 전공.
 ${$('#dept').value ? '[지원 학과] ' + $('#dept').value : ''}
+${S.docs.essayText ? '[자기소개서 일부] ' + S.docs.essayText.slice(0, 900).replace(/\s+/g, ' ') : ''}
+${S.docs.portfolioText ? '[포트폴리오 일부] ' + S.docs.portfolioText.slice(0, 900).replace(/\s+/g, ' ') : ''}
 [질문]
-${part.map((q, i) => `${i}: ${q.text}`).join('\n')}
+${part.map((q, i) => `${i}: ${q.text}${q.answerScript ? ' || 답변 요약: ' + q.answerScript.replace(/\s+/g, ' ').slice(0, 160) : ''}`).join('\n')}
 JSON만 출력: {"items":[{"i":번호,"category":"분류"}]}`;
       const j = parseJSON(await callClaude(prompt, { fast: true, maxTokens: Math.min(4000, 50 * part.length + 300) }));
+      if (qBox().value !== raw0) return -1;          // 분류하는 사이 목록이 바뀌었으면 결과를 버림
       (j.items || []).forEach(x => { const i = idOf(x?.i); const c = resolveCat(x?.category); if (i != null && part[i] && CANON_CATS.includes(c)) { S.aiCats[normText(part[i].text)] = c; n++; } });
     }
   } catch (e) { console.warn('aiClassify', e); if (force) throw e; }
@@ -2320,7 +2576,7 @@ function orderQuestions(list, order) {
   return a.sort((x, y) => flowRank(catKey(x)) - flowRank(catKey(y)) || x.id - y.id);   // flow · adaptive
 }
 const ORDER_NOTE = { adaptive: '시작 순서는 이 목록과 같고, 이후에는 면접관이 답변 흐름에 맞춰 남은 질문 중에서 고릅니다.', flow: '이 순서대로 물어요.', seq: '적은 순서대로 물어요.', shuffle: '이 순서대로 물어요 (무작위로 섞은 결과).' };
-function planSignature(opt) { return JSON.stringify([$('#questions').value, opt.count, opt.mode, opt.caps, opt.basics]); }
+function planSignature(opt) { return JSON.stringify([$('#qSource').value, qBox().value, $('#dept').value, opt.count, opt.mode, opt.caps, opt.basics]); }
 function updateQuestionSelectorStatus() {
   const all = parseQuestions(), opt = selectionOptions();
   const dry = selectQuestions(all, opt, true);
@@ -2332,7 +2588,7 @@ function updateQuestionSelectorStatus() {
   $('#question-cat-summary').textContent = `정리한 ${all.length - dups}개 중 ${dry.length}개를 물어요` +
     (dry.length ? ' · ' + Object.entries(per).sort((a, b) => flowRank(a[0]) - flowRank(b[0])).map(([c, n]) => `${catLabel(c)} ${n}`).join(' · ') : '') +
     (dry.length < opt.count ? ` · 조건에 맞는 질문이 ${dry.length}개뿐이에요` : '') +
-    (dups ? ` · 같은 질문 ${dups}줄은 한 번만 써요` : '');
+    (dups ? ` · 같은 질문·다른 학과용 ${dups}줄은 빼고 써요` : '');
   refreshPlanPreview(false);
   updateMissingBasics(all);
   updateCatReviewSummary();
@@ -2403,6 +2659,7 @@ function getSelectedQuestionPlan() {
    예상 질문 생성 · 생기부 분석
    ===================================================================== */
 $('#btn-gen-tpl').onclick = () => {
+  if (!isAiSource()) setSource('ai');
   const cats = $$('#gen-cats input:checked').map(x => x.value);
   if (!cats.length) { $('#gen-out').textContent = '분류를 하나 이상 골라 주세요.'; return; }
   const n = +$('#gen-n').value, lines = [];
@@ -2412,15 +2669,17 @@ $('#btn-gen-tpl').onclick = () => {
     cats.forEach(c => { const q = TPL[c]?.[round]; if (q && lines.length < n) lines.push(`[${c}] ${fillTpl(q)}`); });
     round++;
   }
-  const added = appendQuestions(lines);
-  $('#gen-out').textContent = added ? `기본 질문 ${added}개를 목록에 추가했어요.` : '이미 목록에 있는 질문들이에요.';
+  const added = appendQuestions(lines, 'ai');
+  $('#gen-out').textContent = added ? `기본 질문 ${added}개를 AI 예상 질문에 추가했어요.` : '이미 목록에 있는 질문들이에요.';
 };
-$('#btn-gen-ai').onclick = async () => {
+$('#btn-gen-ai').onclick = () => generateAIQuestions();
+async function generateAIQuestions() {
   const out = $('#gen-out'), btn = $('#btn-gen-ai');
-  if (!aiReady()) { out.textContent = 'AI 질문 생성은 API 키가 필요해요. "면접 설정" 탭에서 키를 넣거나 "기본 질문 넣기"를 써 보세요.'; return; }
+  if (!aiReady()) { out.textContent = 'AI 질문 생성은 API 키가 필요해요. "④ 면접 설정"에서 키를 넣거나 "AI 없이 기본 질문"을 써 보세요.'; return 0; }
   const cats = $$('#gen-cats input:checked').map(x => x.value);
-  if (!cats.length) { out.textContent = '분류를 하나 이상 골라 주세요.'; return; }
+  if (!cats.length) { out.textContent = '분류를 하나 이상 골라 주세요.'; return 0; }
   btn.disabled = true; out.innerHTML = '<span class="inline-spin"></span> 질문을 만들고 있어요…';
+  let added = 0;
   try {
     const prompt = `너는 대학 입시 면접 전문 코치다. 아래 지원자를 위한 예상 면접 질문을 만든다.
 ${profileCtx()}
@@ -2428,7 +2687,7 @@ ${profileCtx()}
 [만들 분류] ${cats.join(', ')}
 [개수] 총 ${$('#gen-n').value}개 (분류에 고르게 배분)
 [이미 있는 질문 — 겹치지 않게]
-${parseQuestions().map(q => '- ' + q.text).join('\n') || '(없음)'}
+${boxQuestionTexts($('#aiQuestions').value).concat(mineQuestionTexts()).slice(0, 80).map(t => '- ' + t).join('\n') || '(없음)'}
 
 규칙:
 - 실제 입학 면접관이 하는 자연스러운 한국어 질문 (한 문장, 반드시 존댓말).
@@ -2440,12 +2699,13 @@ ${parseQuestions().map(q => '- ' + q.text).join('\n') || '(없음)'}
 - "마무리" 분류는 최대 1개.
 JSON만 출력: {"questions":[{"category":"분류명","question":"질문"}]}`;
     const j = parseJSON(await callClaude(prompt, { maxTokens: 2000 }));
-    const lines = (j.questions || []).filter(x => x?.question && politeOK(x.question)).map(x => `[${normCat(x.category) || '공통'}] ${asQuestion(x.question)}`);
-    const added = appendQuestions(lines);
-    out.textContent = `질문 ${added}개를 목록 끝에 추가했어요. 필요 없는 줄은 지우면 돼요.`;
+    const lines = (j.questions || []).filter(x => x?.question && politeOK(asQuestion(x.question))).map(x => `[${normCat(x.category) || '공통'}] ${asQuestion(x.question)}`);
+    added = appendQuestions(lines, 'ai');
+    out.textContent = added ? `AI 질문 ${added}개를 만들었어요. 필요 없는 줄은 지우면 돼요.` : '새로 만든 질문이 이미 목록에 있어요. 분류를 바꿔 다시 만들어 보세요.';
   } catch (e) { out.textContent = '질문을 만들지 못했어요: ' + e.message; }
   btn.disabled = false;
-};
+  return added;
+}
 
 function renderRecordAnalysis() {
   const R = S.recordAnalysis;
@@ -2461,7 +2721,7 @@ function renderRecordAnalysis() {
 function addRecordQuestion(q) {
   if (!q?.q) return 0;
   S.hints[q.q] = (q.follow_ups || []).filter(Boolean);
-  return appendQuestions([`[생기부] ${q.q}`]);
+  return appendQuestions([`[생기부] ${q.q}`], 'ai');
 }
 $('#rec-acts').addEventListener('click', e => {
   const b = e.target.closest('[data-addq]'); if (!b) return;
@@ -2472,13 +2732,13 @@ $('#rec-acts').addEventListener('click', e => {
 $('#portfolioPdf').addEventListener('change',e=>handlePdfInput('portfolio',e.target.files?.[0]));
 $('#essayPdf').addEventListener('change',e=>handlePdfInput('essay',e.target.files?.[0]));
 $('#btn-doc-clear').onclick=clearDocs;
-$('#btn-doc-questions').onclick=async()=>{const out=$('#doc-out'),btn=$('#btn-doc-questions');if(!S.docs.portfolioText&&!S.docs.essayText){out.textContent='포트폴리오 또는 자기소개서 PDF를 먼저 첨부해 주세요.';return}if(!aiReady()){out.textContent='PDF 내용에서 질문을 만들려면 AI API 키가 필요해요.';return}btn.disabled=true;out.innerHTML='<span class="inline-spin"></span> PDF를 분석해 질문을 만드는 중…';try{const existing=parseQuestions().map(q=>`[${q.cat||'기타'}] ${q.text}`).join('\n');const prompt=`너는 대학 입시 면접관이다. 아래 지원자의 포트폴리오와 자기소개서를 실제 면접에서 확인할 가능성이 높은 순서로 분석해 예상 질문을 만든다.\n${profileCtx()}\n[포트폴리오 원문]\n${S.docs.portfolioText.slice(0,18000)||'(없음)'}\n[자기소개서 원문]\n${S.docs.essayText.slice(0,18000)||'(없음)'}\n[이미 있는 예상 질문]\n${existing||'(없음)'}\n규칙:\n- 반드시 제공된 PDF 내용에 근거한 질문만 만든다. 없는 경험·성과·수치를 추측하지 않는다.\n- 포트폴리오는 작품 선택 이유, 본인 역할, 제작 과정, 문제 해결, 사용 도구, 결과, 배운 점, 협업을 우선한다.\n- 자기소개서는 주장보다 그 근거가 되는 경험과 구체적인 행동을 확인하는 질문을 우선한다.\n- 중복 질문은 합치고 실제 면접에서 답하기 좋은 자연스러운 존댓말로 만든다.\n- 꼬리질문으로 이어질 가치가 높은 질문을 우선한다.\n- 분류는 포트폴리오 또는 자기소개서 중 하나다.\n- 총 10개 안팎, 두 자료가 모두 있으면 고르게 분배한다.\nJSON만 출력: {"questions":[{"category":"포트폴리오|자기소개서","question":"..."}]}`;const j=parseJSON(await callClaude(prompt,{maxTokens:2600}));const lines=(j.questions||[]).filter(x=>x?.question&&politeOK(x.question)).map(x=>`[${normCat(x.category)||'포트폴리오'}] ${asQuestion(x.question)}`);const added=appendQuestions(lines);out.textContent=`서류 기반 질문 ${added}개를 예상 질문 목록에 추가했어요.`}catch(e){out.textContent='서류 분석 질문 생성 실패: '+e.message}finally{btn.disabled=false}};
+$('#btn-doc-questions').onclick=async()=>{const out=$('#doc-out'),btn=$('#btn-doc-questions');if(!S.docs.portfolioText&&!S.docs.essayText){out.textContent='포트폴리오 또는 자기소개서 PDF를 먼저 첨부해 주세요.';return}if(!aiReady()){out.textContent='PDF 내용에서 질문을 만들려면 AI API 키가 필요해요.';return}btn.disabled=true;out.innerHTML='<span class="inline-spin"></span> PDF를 분석해 질문을 만드는 중…';try{const existing=parseQuestions().map(q=>`[${q.cat||'기타'}] ${q.text}`).join('\n');const prompt=`너는 대학 입시 면접관이다. 아래 지원자의 포트폴리오와 자기소개서를 실제 면접에서 확인할 가능성이 높은 순서로 분석해 예상 질문을 만든다.\n${profileCtx()}\n[포트폴리오 원문]\n${S.docs.portfolioText.slice(0,18000)||'(없음)'}\n[자기소개서 원문]\n${S.docs.essayText.slice(0,18000)||'(없음)'}\n[이미 있는 예상 질문]\n${existing||'(없음)'}\n규칙:\n- 반드시 제공된 PDF 내용에 근거한 질문만 만든다. 없는 경험·성과·수치를 추측하지 않는다.\n- 포트폴리오는 작품 선택 이유, 본인 역할, 제작 과정, 문제 해결, 사용 도구, 결과, 배운 점, 협업을 우선한다.\n- 자기소개서는 주장보다 그 근거가 되는 경험과 구체적인 행동을 확인하는 질문을 우선한다.\n- 중복 질문은 합치고 실제 면접에서 답하기 좋은 자연스러운 존댓말로 만든다.\n- 꼬리질문으로 이어질 가치가 높은 질문을 우선한다.\n- 분류는 포트폴리오 또는 자기소개서 중 하나다.\n- 총 10개 안팎, 두 자료가 모두 있으면 고르게 분배한다.\nJSON만 출력: {"questions":[{"category":"포트폴리오|자기소개서","question":"..."}]}`;const j=parseJSON(await callClaude(prompt,{maxTokens:2600}));const lines=(j.questions||[]).filter(x=>x?.question&&politeOK(asQuestion(x.question))).map(x=>`[${normCat(x.category)||'포트폴리오'}] ${asQuestion(x.question)}`);const added=appendQuestions(lines,'ai');out.textContent=`서류 기반 질문 ${added}개를 AI 예상 질문에 추가했어요.`}catch(e){out.textContent='서류 분석 질문 생성 실패: '+e.message}finally{btn.disabled=false}};
 
 $('#btn-rec-addall').onclick = () => {
   let n = 0;
   (S.recordAnalysis?.activities || []).forEach(a => (a.questions || []).forEach(q => n += addRecordQuestion(q)));
   $$('#rec-acts [data-addq]').forEach(b => { b.textContent = '추가됨'; b.disabled = true; });
-  $('#rec-out').textContent = `생기부 질문 ${n}개를 예상 질문 목록에 추가했어요.`;
+  $('#rec-out').textContent = `생기부 질문 ${n}개를 AI 예상 질문에 추가했어요.`;
 };
 $('#btn-rec-clear').onclick = () => { $('#record').value = ''; S.recordAnalysis = null; renderRecordAnalysis(); $('#rec-summary').textContent = '분석하면 활동마다 예상 질문과 꼬리질문이 여기에 나와요.'; updateCount(); save(); };
 $('#btn-rec-analyze').onclick = async () => {
@@ -4266,8 +4526,17 @@ async function startInterview(list) {
     : '준비가 끝났어요. 선택한 단계로 면접을 시작합니다.';
   startSession('interview', { plan: qs.map(q => ({ ...q })), selectedTrainingStage: stage });
 }
-$('#btn-start').onclick = () => {
-  if (!parseQuestions().length) { $('#questions').value = defaultQuestions(); _lastQRaw = $('#questions').value; renderQuestionSelector(); showToast('예상 질문이 없어서 예시 질문으로 시작해요.'); }
+$('#btn-start').onclick = async () => {
+  if (!parseQuestions().length) {
+    if (isAiSource()) {
+      if (aiReady() && S.aiStatus !== 'fail') {
+        selectTab('tab-q'); showToast('AI 질문이 아직 없어서 먼저 만들게요.');
+        const n = await generateAIQuestions();
+        if (!n) return;
+      } else { appendQuestions(defaultQuestions().split('\n'), 'ai'); showToast('AI 키가 없어서 기본 질문으로 시작해요.'); }
+    } else { $('#questions').value = defaultQuestions(); showToast('예상 질문이 없어서 예시 질문으로 시작해요.'); }
+    _lastQRaw = null; renderQuestionSelector();
+  }
   save(); startInterview(null);
 };
 $('#btn-start-m').onclick = () => $('#btn-start').click();
@@ -4315,7 +4584,14 @@ renderRecordAnalysis();
 renderHistoryBox();
 renderDocs();
 renderQuestionSelector();
-_lastQRaw = $('#questions').value;
+_lastQRaw = $('#qSource').value + '|' + qBox().value; _lastSRaw = $('#answerScripts').value; _bulkQ = $('#questions').value;
+// 예전 버전에서 질문+답변 문서를 통째로 넣어 둔 경우: 처음 열 때 한 번 질문 목록과 답변 정리로 나눠 연결
+{
+  const dq = parseQADoc($('#questions').value), ds = dq ? null : parseQADoc($('#answerScripts').value);
+  const mine = mineQuestionTexts();
+  if (dq) importQADoc(dq, 'questions');
+  else if (ds && ds.filter(it => mine.some(t => sameQuestion(t, it.q))).length < ds.length * 0.8) importQADoc(ds, 'scripts');
+}
 applyPresetState();
 updateMode();
 if (aiReady()) checkAI(false);
