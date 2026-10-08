@@ -444,6 +444,10 @@ kbd{font:500 .75rem var(--f-mono);padding:1px 6px;border:1px solid var(--line);b
 .dept-pick button{font:600 .8rem var(--f-body);padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-height:32px}
 .dept-pick button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 @media(max-width:760px){#question-plan .plan-item{grid-template-columns:22px 64px minmax(0,1fr) 34px}.plan-x{width:34px;height:34px}}
+.try{padding:12px 0;border-top:1px solid var(--line)}.try:first-child{border-top:0;padding-top:4px}
+.try-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.try-h>span{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.src-tag{font:600 .7rem var(--f-body);padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted)}.src-tag.ok{background:var(--accent-soft);color:var(--accent)}
+.row.practice{background:var(--accent-soft);border-radius:10px;padding:10px 12px}.pr-item+.pr-item{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}.pr-item p{margin-top:3px;font-size:.86rem}.pr-h{font-size:.84rem}
 .src-seg{margin:2px 0 12px}.src-seg button{padding:12px 14px}.src-seg button b{font-size:.92rem}
 .src-hint{font-size:.84rem;color:var(--muted);line-height:1.6;margin:0 0 10px}.src-hint b{color:var(--ink);font-weight:600}
 textarea#aiQuestions{min-height:200px;line-height:1.7;font-size:.9rem;margin-top:10px}
@@ -1378,6 +1382,7 @@ const S = { run: 0, phase: 'idle', pending: null, cfg: null, t0: 0, audio: null,
   questionSelection: { count: 10, balance: 'balanced', caps: null, basics: ['자기소개', '지원동기', '학업계획', '진로', '장단점', '인성', '마무리'] },
   planCache: null, aiCats: {}, aiCatsVer: 0, aiStatus: 'none', aiMsg: '' };
 
+const PKEY = 'interview-coach.practice.v5';
 const KEY = 'interview-coach.v2', HKEY = 'interview-coach.history.v2', V1KEY = 'interview-coach.v1', TKEY = 'interview-coach.training.v4', SKEY = 'interview-coach.sessions.v4';
 const FIELDS = ['school', 'phrasing', 'univ', 'dept', 'track', 'itype', 'memo', 'record', 'questions', 'answerScripts', 'aiQuestions', 'qSource', 'deptPick', 'followups', 'target', 'order', 'voice', 'rate', 'model', 'fastmodel', 'gen-n', 'serverUrl'];
 const CHECKS = ['autorec', 'opening', 'recordAudio', 'subtitles', 'remember'];
@@ -1477,6 +1482,31 @@ async function loadServerHistory() {
 }
 function trainingStore() { return readJSON(TKEY) || {}; }
 function saveTrainingStore(v) { writeJSON(TKEY, v); }
+/* 질문별 연습 기록 (암기 방지 훈련 · 약점 집중훈련) — 면접 리포트의 질문별 피드백에 함께 보여 줌 */
+const practiceKey = t => normText(String(t || '').replace(/\s*[(（][^()（）]{1,40}[)）]\s*$/, ''));
+function getPractice() { return readJSON(PKEY) || {}; }
+function practiceFor(text) { return getPractice()[practiceKey(text)] || []; }
+function recordPractice(ss) {
+  const store = getPractice(), add = (text, e) => { const k = practiceKey(text); if (!k) return; const list = (store[k] ||= []).filter(x => x.id !== e.id); list.push(e); store[k] = list.slice(-6); };
+  if (ss.kind === 'stage') {
+    const by = {};
+    (ss.results || []).forEach(r => (by[r.qText] ||= []).push(r));
+    Object.entries(by).forEach(([t, tries]) => {
+      const last = tries[tries.length - 1], sc = tries.map(x => x.evaluation?.score).filter(v => v != null);
+      add(t, { id: ss.histId + ':' + t.slice(0, 20), date: ss.startedAt, kind: 'stage', label: '암기 방지 훈련', score: sc.length ? sc[sc.length - 1] : null,
+        first: sc.length ? sc[0] : null, stage: last.nextStage, mastered: tries.some(x => x.mastered), feedback: last.evaluation?.feedback || '', ai: !!last.evaluation?.ai, tries: tries.length });
+    });
+  } else if (ss.kind === 'drill') {
+    (ss.results || []).forEach(r => add(r.q.text, { id: ss.histId + ':' + r.q.text.slice(0, 20), date: ss.startedAt, kind: 'drill', label: '약점 집중훈련 · ' + (WEAK[ss.weakKey]?.label || ''),
+      score: r.e2.score ?? null, first: r.e1.score ?? null, feedback: [r.e2.improved && '나아진 점: ' + r.e2.improved, r.e2.remaining && '남은 문제: ' + r.e2.remaining].filter(Boolean).join(' / ') || r.e1.feedback || '', ai: !!r.e2.ai }));
+  }
+  writeJSON(PKEY, store);
+}
+function practiceRowHtml(text, baseScore, since) {
+  const list = practiceFor(text).filter(e => !since || e.date >= since).slice(-2).reverse();
+  if (!list.length) return '';
+  return `<div class="row practice"><span class="label" style="color:var(--accent)">최근 연습 결과</span>${list.map(e => `<div class="pr-item"><span class="pr-h"><b>${esc(e.label)}</b> · ${new Date(e.date).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}${e.score != null ? ` · <span class="grade g-${band(e.score)}">${e.score}점</span>` : ''}${e.first != null && e.score != null && e.first !== e.score ? ` <span class="said">(첫 시도 ${e.first}점)</span>` : ''}${baseScore != null && e.score != null ? ' ' + deltaChip(e.score, baseScore) : ''}${e.kind === 'stage' ? ` · ${e.mastered ? '독립 답변 성공' : '다음 ' + e.stage + '단계'}` : ''}</span>${e.feedback ? `<p>${esc(e.feedback)}</p>` : ''}</div>`).join('')}</div>`;
+}
 function trainingKey(ss, q) {
   return [ss.cfg?.univ || '', ss.cfg?.dept || '', normText(q.planned || q.text || '')].join('|').slice(0, 500);   // 질문 문장 기준 (답변 문장이 아님)
 }
@@ -2071,7 +2101,7 @@ function renderHistoryBox() {
   $('#hist-box').innerHTML = `<div class="tbl-wrap"><table class="hist"><thead><tr><th>날짜</th><th>종류</th><th class="num">점수</th><th>주요 약점</th><th></th></tr></thead><tbody>${h.map(e => {
     const d = new Date(e.date);
     const kind = e.kind === 'drill' ? `약점 · ${esc(e.label || '')}` : e.kind === 'stage' ? '암기 방지 훈련' : '모의면접';
-    const sc = e.kind === 'drill' ? `${e.before ?? '–'}→${e.after ?? '–'}` : e.kind === 'stage' ? `${e.after ?? 0}개 완료` : (e.overall ?? '–');
+    const sc = e.kind === 'drill' ? `${e.before ?? '–'}→${e.after ?? '–'}` : e.kind === 'stage' ? (e.score != null ? `${e.score}점 · ${e.after ?? 0}개 완료` : `${e.after ?? 0}개 완료`) : (e.overall ?? '–');
     return `<tr><td class="num" style="text-align:left">${d.getMonth() + 1}.${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}</td><td>${kind}</td><td class="num">${sc}</td><td>${esc((e.weak || []).slice(0, 2).map(w => w.label).join(', ') || '–')}</td><td><button class="btn small" type="button" data-open-session="${esc(e.id)}">열기</button></td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
@@ -2283,6 +2313,21 @@ async function callClaude(prompt, { fast = false, maxTokens = 1024, retry = 1 } 
   return text;
 }
 const idOf = v => { const n = parseInt(String(v ?? '').replace(/[^\d]/g, ''), 10); return Number.isFinite(n) ? n : null; };
+/* "72점", "72.5", "72/100" 같은 점수 → 0~100 정수 (없으면 null) */
+function numScore(v) {
+  if (v == null || v === '' || typeof v === 'boolean') return null;
+  let n = typeof v === 'number' ? v : NaN;
+  if (typeof v === 'string') { const m = v.match(/-?\d+(?:\.\d+)?/); n = m ? parseFloat(m[0]) : NaN; }
+  return Number.isFinite(n) ? clamp(Math.round(n), 0, 100) : null;
+}
+/* "true", "예", "통과" 같은 값 → 참/거짓 */
+function boolOf(v) {
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'number') return v > 0;
+  const t = String(v ?? '').trim().toLowerCase();
+  return /^(true|yes|y|1|예|네|통과|가능|맞음|o)$/.test(t);
+}
+const listOf = v => Array.isArray(v) ? v.map(String).filter(Boolean) : String(v ?? '').split(/[,·\n]/).map(x => x.trim()).filter(Boolean);
 function parseJSON(t) {
   let raw = String(t || '').trim();
   const m = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -2306,12 +2351,20 @@ const REPORT_JSON_SCHEMA = {
   }
 };
 const STAGE_JSON_SCHEMA = {
-  type:'object', required:['advance','core_preserved','logic_ok','natural','script_like','feedback','missing','hint'],
-  properties:{advance:{type:'boolean'},core_preserved:{type:'boolean'},logic_ok:{type:'boolean'},natural:{type:'boolean'},
+  type:'object', required:['advance','feedback'],
+  properties:{score:{type:['integer','null']},advance:{type:'boolean'},core_preserved:{type:'boolean'},logic_ok:{type:'boolean'},natural:{type:'boolean'},
     script_like:{type:'boolean'},feedback:{type:'string'},missing:{type:'array'},hint:{type:'string'}}
 };
 function assertSchemaBasics(obj, schema) {
   if (!obj || typeof obj !== 'object') throw new Error('JSON 객체가 아닙니다.');
+  for (const [k, p] of Object.entries(schema.properties || {})) {         // 모델이 "72점", "true"처럼 보내도 받아들임
+    if (!(k in obj) || obj[k] === null) continue;
+    const types = Array.isArray(p.type) ? p.type : [p.type];
+    if (types.includes('integer') && !Number.isInteger(obj[k])) { const n = numScore(obj[k]); if (n != null) obj[k] = n; }
+    if (types.includes('boolean') && typeof obj[k] !== 'boolean') obj[k] = boolOf(obj[k]);
+    if (types.includes('array') && !Array.isArray(obj[k])) obj[k] = listOf(obj[k]);
+    if (types.includes('string') && typeof obj[k] !== 'string') obj[k] = String(obj[k]);
+  }
   for (const k of (schema.required || [])) if (!(k in obj)) throw new Error(`필수 필드 누락: ${k}`);
   for (const [k,p] of Object.entries(schema.properties || {})) {
     if (!(k in obj)) continue;
@@ -3041,7 +3094,7 @@ async function finishSession(early = false) {
   $('#rec-badge').hidden = true;
   showView('report');
   if (early) speak('수고하셨습니다. 여기까지 하겠습니다.');
-  if (S.session.kind === 'interview') generateReport(); else if (S.session.kind === 'drill') finishDrill(); else finishStageSession();
+  if (S.session.kind === 'interview') generateReport(); else if (S.session.kind === 'drill') finishDrill().catch(e => console.warn(e)); else finishStageSession().catch(e => console.warn(e));
   S.finishing = false;
 }
 
@@ -3552,9 +3605,9 @@ function validateOverview(j) {
   const cats = (j.categories || []).map((c, i) => ({ c, name: byName.get(String(c?.name || '').replace(/\s/g, '')) || null }));
   j.categories = CONTENT_CATS.map((n, i) => {
     const hit = cats.find(x => x.name === n)?.c || (cats.length === CONTENT_CATS.length ? cats[i].c : null);
-    return { name: n, score: hit && Number.isFinite(+hit.score) && hit.score !== null ? clamp(Math.round(+hit.score), 0, 100) : null, comment: String(hit?.comment || '') };
+    return { name: n, score: hit ? numScore(hit.score) : null, comment: String(hit?.comment || '') };
   });
-  j.overall_content = Number.isFinite(+j.overall_content) && j.overall_content !== null ? clamp(Math.round(+j.overall_content), 0, 100) : null;
+  j.overall_content = numScore(j.overall_content);
   j.summary = String(j.summary || '');
   j.priorities = Array.isArray(j.priorities) ? j.priorities.slice(0, 3).map(p => ({ title: String(p?.title || ''), detail: String(p?.detail || ''), how: String(p?.how || '') })) : [];
   j.strengths = Array.isArray(j.strengths) ? j.strengths.slice(0, 3).map(String) : [];
@@ -3613,7 +3666,7 @@ ${REPORT_RULES}
 }
 function normFeedback(x, a) {
   return {
-    id: a.id, score: x.score != null && Number.isFinite(+x.score) ? clamp(Math.round(+x.score), 0, 100) : null,
+    id: a.id, score: numScore(x.score),
     verdict: String(x.verdict || ''), good: String(x.good || ''), improve: String(x.improve || ''),
     problems: (Array.isArray(x.problems) ? x.problems : []).filter(p => p && p.quote).slice(0, 5).map(p => ({ quote: String(p.quote), type: String(p.type || 'vague'), comment: String(p.comment || '') })),
     direction: String(x.direction || ''), example: String(x.example || '')
@@ -3911,13 +3964,14 @@ function renderInterviewReport(ss) {
   }
   scored.forEach((a, idx) => {
     const ra = raMap[a.id];
-    const s = ra ? Math.round(+ra.score || 0) : null;
+    const s = ra ? numScore(ra.score) : null;
     const label = a.kind === 'main' ? `Q${qIndex(ss, a)}` : `Q${qIndex(ss, a)} ${KIND_LABEL[a.kind]}`;
     const chips = a.skipped ? '<span class="chip warn">건너뜀</span>' :
       `<span class="chip ${a.sec > a.target * 1.3 ? 'warn' : ''}">${fmt(a.sec)}</span><span class="chip">${a.m.spm || '–'} 음절/분</span><span class="chip ${a.m.fillerN >= 3 ? 'warn' : ''}">습관어 ${a.m.fillerN}</span><span class="chip ${a.m.longSil ? 'warn' : ''}">긴 침묵 ${a.m.longSil}</span>${a.m.delay != null ? `<span class="chip ${a.m.delay > 3 ? 'warn' : ''}">첫마디 ${r1(a.m.delay)}초</span>` : ''}`;
     const myIssues = ss.issues.filter(i => i.ansId === a.id);
+    const lastP = a.kind === 'main' ? practiceFor(a.planned || a.say).filter(e => e.date >= ss.startedAt).pop() : null;
     P.fb += `<details class="qitem"${idx === 0 ? ' open' : ''}>
-      <summary><span class="qs g-${band(s)}">${s ?? '–'}</span><span class="qt"><b>${a.kind !== 'main' ? '↳ ' : ''}${esc(a.say)}</b><span>${esc(label)}${a.cat ? ' · ' + esc(a.cat) : ''}${ra?.verdict ? ' · ' + esc(ra.verdict) : ''}</span></span><span class="chev" aria-hidden="true">›</span></summary>
+      <summary><span class="qs g-${band(s)}">${s ?? '–'}</span><span class="qt"><b>${a.kind !== 'main' ? '↳ ' : ''}${esc(a.say)}</b><span>${esc(label)}${a.cat ? ' · ' + esc(a.cat) : ''}${ra?.verdict ? ' · ' + esc(ra.verdict) : ''}${lastP?.score != null ? ` · 연습 후 ${lastP.score}점` : ''}</span></span><span class="chev" aria-hidden="true">›</span></summary>
       <div class="qbody">
         <div class="chips">${hasAudio && !a.skipped ? tchip(a.tStart, a.tEnd, true) : ''}${chips}</div>
         ${a.planned && a.kind === 'main' && a.planned !== a.say ? `<p class="said">준비한 질문: ${esc(a.planned)}</p>` : ''}
@@ -3927,6 +3981,7 @@ function renderInterviewReport(ss) {
         ${ra?.improve ? `<div class="row"><span class="label" style="color:var(--warn)">개선할 점</span><p>${esc(ra.improve)}</p></div>` : ''}
         ${myIssues.length ? `<div class="row"><span class="label" style="color:var(--rec)">실제 발화 중 문제가 된 부분</span><ul class="plist">${myIssues.map(i => `<li>${tchip(i.t, i.t1, hasAudio)}<span>${esc(i.text)}</span></li>`).join('')}</ul></div>` : ''}
         ${ra?.direction || ra?.example ? `<div class="row"><span class="label" style="color:var(--accent)">개선 방향</span>${ra.direction ? `<p>${esc(ra.direction)}</p>` : ''}${ra.example ? `<p class="better">${esc(ra.example)}</p><p class="said">내가 말한 내용만으로 다시 구성한 예시예요. [ ] 칸은 내 실제 경험으로 채워 주세요.</p>` : ''}</div>` : ''}
+        ${a.kind === 'main' ? practiceRowHtml(a.planned || a.say, s, ss.startedAt) : ''}
       </div></details>`;
   });
   P.fb += `</div></section>`;
@@ -3971,7 +4026,7 @@ function lowQuestions(ss) {
   const set = new Map();
   scoredAnswers(ss).forEach(a => {
     const ra = raMap[a.id];
-    const bad = a.skipped || (ra && +ra.score < 70) || (!ss.report && (a.m.keys.size >= 2 || a.m.issues.some(i => i.key === 'short')));
+    const bad = a.skipped || (ra && numScore(ra.score) != null && numScore(ra.score) < 70) || (!ss.report && (a.m.keys.size >= 2 || a.m.issues.some(i => i.key === 'short')));
     if (bad && a.planned) set.set(a.planned, { text: a.planned, cat: a.cat });
   });
   return [...set.values()];
@@ -4132,6 +4187,7 @@ async function saveReportHtml() {
 }
 function reportText(ss) {
   if (ss.kind === 'drill') return drillText(ss);
+  if (ss.kind === 'stage') return `[암기 방지 훈련] ${new Date(ss.startedAt).toLocaleString('ko-KR')} · 평균 ${ss.avgScore ?? '–'}점\n` + (ss.results || []).map(r => `\nQ. ${r.qText} (${r.stage}단계${r.evaluation?.score != null ? ' · ' + r.evaluation.score + '점' : ''})\nA. ${r.answer || '(답변 없음)'}\n피드백: ${r.evaluation?.feedback || '-'}`).join('\n');
   const R = ss.report, D = ss.delivery;
   let t = `[입시 면접 연습 리포트] ${new Date(ss.startedAt).toLocaleString('ko-KR')} · ${[ss.cfg.univ, ss.cfg.dept].filter(Boolean).join(' ')}\n종합 ${ss.overall ?? '–'}/100 (내용 ${ss.contentScore ?? '–'} · 말하기 ${ss.deliveryScore ?? '–'})\n`;
   if (R) t += R.summary + '\n';
@@ -4191,8 +4247,7 @@ function stagePrompt(ss, q, a, stage) {
 ${profileCtx(ss.cfg)}
 [질문] ${q.text}
 [현재 단계] ${stage}단계
-[핵심 키워드] ${spec.keywords.join(', ')}
-[답변 개요] ${spec.outline.join(' → ')}
+${spec.keywords.length ? `[핵심 키워드] ${spec.keywords.join(', ')}\n[답변 개요] ${spec.outline.join(' → ')}` : '[답변 정리 없음] 정리해 둔 답변이 없는 질문이다. 질문에 맞게 답했는지, 구체적인 경험·근거가 있는지, 논리적으로 이어지는지로 평가하고 advance를 정한다.'}
 [이번 답변] ${a.text.slice(0,2200)}
 평가 원칙:
 - 문장이 1단계와 같지 않아도 된다.
@@ -4202,12 +4257,20 @@ ${profileCtx(ss.cfg)}
 - 다음 단계로 갈 수 있는지 판단할 때 핵심 내용 전달, 논리성, 자신의 말로 표현했는지, 질문 대응력을 우선한다.
 - stage 3에서는 힌트 없이도 핵심 내용이 유지되는지를 가장 중요하게 본다.
 JSON만 출력:
-{"advance":true|false,"core_preserved":true|false,"logic_ok":true|false,"natural":true|false,"script_like":true|false,"feedback":"짧은 피드백 1~2문장","missing":["빠진 핵심 내용 1~2개"],"hint":"다음 답변에서 기억할 최소 힌트. 문장 형태 금지, 키워드만."}
+{"score":0~100 정수 (이 답변의 내용 완성도),"advance":true|false,"core_preserved":true|false,"logic_ok":true|false,"natural":true|false,"script_like":true|false,"feedback":"짧은 피드백 1~2문장 (존댓말)","missing":["빠진 핵심 내용 1~2개"],"hint":"다음 답변에서 기억할 최소 힌트. 문장 형태 금지, 키워드만."}
 ${NO_FAB}`;
 }
 function validateStageShape(j) {
+  if (j && typeof j === 'object' && !('advance' in j) && 'pass' in j) j.advance = j.pass;
   assertSchemaBasics(j, STAGE_JSON_SCHEMA);
+  if (!String(j.feedback || '').trim()) throw new Error('피드백이 비어 있어요.');
   return j;
+}
+/* 답변 정리 키워드가 얼마나 들어갔는지 + 분량으로 낸 대략 점수 (AI가 없을 때) */
+function localStageScore(spec, coverage, a) {
+  if (a.skipped || !a.text) return null;
+  const len = Math.min(1, a.m.chars / 180);
+  return spec?.keywords?.length ? Math.round(clamp(35 + coverage * 45 + len * 20, 0, 100)) : Math.round(clamp(30 + len * 45, 0, 75));
 }
 async function evaluateStageAnswer(ss, q, a, stage) {
   const localSpec = q.training || scriptSpecFromText(q.answerScript || '');
@@ -4223,25 +4286,28 @@ async function evaluateStageAnswer(ss, q, a, stage) {
       ? (a.m.chars >= 45 ? '답변 흐름은 확인했어요. 이 질문은 별도 답변 정리가 없어 내용 암기 평가는 하지 않습니다.' : '답변이 짧았어요. 질문의 핵심부터 자신의 말로 다시 설명해 보세요.')
       : (coverage >= .4 ? '핵심 내용은 유지됐어요. 표현을 바꿔도 괜찮습니다.' : '핵심 내용 중 일부가 빠졌어요. 문장을 외우지 말고 빠진 키워드만 기억해 보세요.'),
     missing: (localSpec?.keywords || []).filter(k => !norm(a.text).includes(norm(k))).slice(0,2),
-    hint: (localSpec?.keywords || []).filter(k => !norm(a.text).includes(norm(k))).slice(0,3).join(' · ')
+    hint: (localSpec?.keywords || []).filter(k => !norm(a.text).includes(norm(k))).slice(0,3).join(' · '),
+    score: localStageScore(localSpec, coverage, a), ai: false, aiError: ''
   };
-  if (!ss.cfg.ai || a.skipped || !localSpec) return local;
+  if (a.skipped) { local.feedback = '답변을 건너뛰었어요. 다음에는 핵심 한 가지라도 말해 보세요.'; return local; }
+  if (!ss.cfg.ai) return local;
   try {
-    const j = await requestStructured(stagePrompt(ss,q,a,stage), validateStageShape, { fast:true, maxTokens:700 });
+    const j = await requestStructured(stagePrompt(ss,q,a,stage), validateStageShape, { fast:true, maxTokens:900 });
     return {
       ...local,
-      advance: !!j.advance,
-      core_preserved: !!j.core_preserved,
-      logic_ok: !!j.logic_ok,
-      natural: !!j.natural,
-      script_like: !!j.script_like,
-      feedback: String(j.feedback || local.feedback),
-      missing: Array.isArray(j.missing) ? j.missing.slice(0,2).map(String) : local.missing,
-      hint: String(j.hint || local.hint)
+      advance: boolOf(j.advance),
+      core_preserved: 'core_preserved' in j ? boolOf(j.core_preserved) : local.core_preserved,
+      logic_ok: 'logic_ok' in j ? boolOf(j.logic_ok) : local.logic_ok,
+      natural: 'natural' in j ? boolOf(j.natural) : local.natural,
+      script_like: boolOf(j.script_like),
+      feedback: politeOr(String(j.feedback || ''), local.feedback),
+      missing: j.missing != null ? listOf(j.missing).slice(0,2) : local.missing,
+      hint: String(j.hint || local.hint),
+      score: numScore(j.score) ?? local.score, ai: true
     };
   } catch (e) {
     console.warn('evaluateStageAnswer', e);
-    return local;
+    return { ...local, aiError: e.message || 'AI 평가 실패' };
   }
 }
 function startStageTraining(mode = 'auto', qId = null) {
@@ -4324,24 +4390,24 @@ async function stageFlow(run) {
         attempts:{...state.attempts,[stage]:(state.attempts?.[stage]||0)+1}
       });
       state = newState;
-      ss.results.push({qId:q.id, qText:q.text, stage, answer:a.text, evaluation:ev, nextStage, mastered, attempt:attemptsThisQuestion});
+      ss.results.push({qId:q.id, qText:q.text, stage, answer:a.text, ansId:a.id, skipped:!!a.skipped, evaluation:ev, nextStage, mastered, attempt:attemptsThisQuestion});
 
       if (mastered) {
         questionMastered = true;
-        showNote(`<div class="cn-head"><span class="label" style="color:var(--good)">3단계 독립 답변 성공</span><span class="stage-pill">완료</span></div><p>${esc(ev.feedback)}</p>`);
+        showNote(`<div class="cn-head"><span class="label" style="color:var(--good)">3단계 독립 답변 성공</span><span class="stage-pill">${ev.score != null ? ev.score + '점 · ' : ''}완료</span></div><p>${esc(ev.feedback)}</p>`);
         await coachLine('좋아요. 이 질문은 이제 문장 없이도 답할 수 있는 상태예요.', { no:'훈련 완료', sub:'다음 질문으로 넘어갑니다.' });
         break;
       }
 
       if (ev.advance && stage < 3) {
         stage = nextStage;
-        showNote(`<div class="cn-head"><span class="label" style="color:var(--accent)">${stage-1}단계 통과</span><span class="stage-pill">${stage}단계</span></div><p>${esc(ev.feedback)}</p>${ev.missing?.length ? `<p class="said">다음 단계에서 기억할 핵심: ${ev.missing.map(esc).join(' · ')}</p>` : ''}`);
+        showNote(`<div class="cn-head"><span class="label" style="color:var(--accent)">${stage-1}단계 통과</span><span class="stage-pill">${ev.score != null ? ev.score + '점 · ' : ''}${stage}단계</span></div><p>${esc(ev.feedback)}</p>${ev.missing?.length ? `<p class="said">다음 단계에서 기억할 핵심: ${ev.missing.map(esc).join(' · ')}</p>` : ''}`);
         await coachLine(`${stage-1}단계가 안정됐어요. 이제 ${stage}단계로 넘어갑니다.`, { no:'단계 상승', sub:'표현은 자유롭게 바꿔도 됩니다.' });
         continue;
       }
 
       // 실패/막힘: 같은 질문·같은 단계를 즉시 반복한다.
-      showNote(`<div class="cn-head"><span class="label" style="color:var(--warn)">같은 질문 한 번 더</span><span class="stage-pill">${stage}단계 · ${attemptsThisQuestion}/3</span></div><p>${esc(ev.feedback)}</p>${ev.missing?.length ? `<p class="said">이번에는 이것만 기억: ${ev.missing.map(esc).join(' · ')}</p>` : ''}`);
+      showNote(`<div class="cn-head"><span class="label" style="color:var(--warn)">같은 질문 한 번 더</span><span class="stage-pill">${ev.score != null ? ev.score + '점 · ' : ''}${stage}단계 · ${attemptsThisQuestion}/3</span></div><p>${esc(ev.feedback)}</p>${ev.missing?.length ? `<p class="said">이번에는 이것만 기억: ${ev.missing.map(esc).join(' · ')}</p>` : ''}`);
       await coachLine('괜찮아요. 방금 질문을 그대로 한 번 더 연습하겠습니다.', { no:'반복 연습', sub:'문장을 외우지 말고 핵심만 떠올려 보세요.' });
     }
 
@@ -4353,43 +4419,70 @@ async function stageFlow(run) {
   updateProgress(completedQuestions, items.length, '훈련 마무리');
   finishSession(false);
 }
-function finishStageSession() {
+async function finishStageSession() {
   const ss = S.session;
   ss.duration = nowT();
-  const mastered = (ss.results || []).filter(r=>r.mastered).length;
+  ss.answers.forEach(a => { try { a.m = analyzeAnswer(a); } catch {} });
+  const failed = (ss.results || []).filter(r => !r.skipped && !r.evaluation?.ai && ss.cfg.ai);
+  if (failed.length) {
+    showLoading('훈련 피드백을 정리하고 있어요', `AI 평가를 받지 못한 답변 ${failed.length}개를 다시 평가하고 있어요.`);
+    for (const r of failed) {
+      const a = ss.answers.find(x => x.id === r.ansId) || { text: r.answer, m: { chars: (r.answer || '').length, fillerN: 0, restarts: 0 }, skipped: false };
+      const q = (ss.items || []).find(x => x.id === r.qId) || { text: r.qText };
+      const ev = await evaluateStageAnswer(ss, q, a, r.stage);
+      if (ev.ai) r.evaluation = { ...ev, advance: r.evaluation.advance };     // 단계 진행은 훈련 중 판단 그대로, 점수·피드백만 채움
+    }
+  }
+  const res = ss.results || [];
+  const mastered = res.filter(r=>r.mastered).length;
+  const sc = res.map(r => r.evaluation?.score).filter(v => v != null);
+  ss.avgScore = sc.length ? Math.round(avg(sc)) : null;
+  ss.aiMissing = ss.cfg.ai ? res.filter(r => !r.skipped && !r.evaluation?.ai).length : 0;
   saveSessionSnapshot(ss);
   ss.histId ||= 's' + ss.startedAt;
   putHistory({ id:ss.histId, kind:'stage', date:ss.startedAt, label:'암기 방지 훈련',
-    before:null, after:mastered, items:(ss.results||[]).length,
+    before:null, after:mastered, score: ss.avgScore, items:res.length,
     weak:[{key:'stage',label:'1→2→3 단계 훈련'}],
-    results:(ss.results||[]).map(r=>({qId:r.qId,stage:r.stage,nextStage:r.nextStage,mastered:r.mastered}))
+    results:res.map(r=>({qId:r.qId,stage:r.stage,nextStage:r.nextStage,mastered:r.mastered,score:r.evaluation?.score ?? null}))
   });
+  recordPractice(ss);
   syncSession(ss);
   renderHistoryBox();
   renderStageReport(ss);
 }
 function renderStageReport(ss) {
   const completed = ss.results || [];
-  let h = `<header class="rep-head"><div class="score"><span class="num">${completed.filter(x=>x.mastered).length}</span><span class="of">독립 답변 완료</span></div>
-    <div><p class="rep-meta">암기 방지 훈련 · ${completed.length}회 답변 · ${fmt(ss.duration || 0)}</p>
-    <p class="rep-summary">${completed.length ? '문장을 외우는 대신 핵심 내용을 유지하면서 표현을 바꾸는 연습을 했습니다.' : '완료한 훈련이 없습니다.'}</p></div></header>`;
-  h += `<section class="panel"><div class="sec-title"><h3>이번 훈련 결과</h3><span class="label">단계는 자동 관리 · 회귀하지 않음</span></div><div class="qlist">`;
-  completed.forEach((r,i)=>{
-    h += `<details class="qitem"${i===0?' open':''}><summary><span class="qs">${r.stage}→${r.nextStage}</span><span class="qt"><b>${esc(r.qText)}</b><span>${r.mastered?'3단계 독립 답변 성공':'다음 연습 단계 '+r.nextStage}</span></span><span class="chev">›</span></summary>
-      <div class="qbody"><div class="row"><span class="label">답변</span><p class="quote">${esc(r.answer)}</p></div>
-      <div class="row"><span class="label">코치 피드백</span><p>${esc(r.evaluation.feedback)}</p></div>
-      ${r.evaluation.missing?.length?`<div class="row"><span class="label">최소 힌트</span><p class="said">${r.evaluation.missing.map(esc).join(' · ')}</p></div>`:''}
+  const sc = completed.map(r => r.evaluation?.score).filter(v => v != null);
+  const avgS = ss.avgScore ?? (sc.length ? Math.round(avg(sc)) : null);
+  const mastered = completed.filter(x => x.mastered).length;
+  // 같은 질문의 여러 회차를 한 묶음으로
+  const groups = [];
+  completed.forEach(r => { let g = groups.find(x => x.qText === r.qText); if (!g) groups.push(g = { qText: r.qText, tries: [] }); g.tries.push(r); });
+  let h = `<header class="rep-head"><div class="score"><span class="num">${avgS ?? '–'}</span><span class="of">${avgS != null ? '평균 점수' : '점수 없음'}</span><span class="grade g-${band(avgS)}">독립 답변 ${mastered}개 완료</span></div>
+    <div><p class="rep-meta">암기 방지 훈련 · 질문 ${groups.length}개 · 답변 ${completed.length}회 · ${fmt(ss.duration || 0)}</p>
+    <p class="rep-summary">${completed.length ? '문장을 외우는 대신 핵심 내용을 유지하면서 표현을 바꾸는 연습을 했습니다. 질문마다 회차별 점수와 피드백을 확인해 보세요.' : '완료한 훈련이 없습니다.'}</p>
+    ${!ss.cfg.ai ? '<p class="notice warn" style="margin-top:10px">AI 연결 없이 진행해서 점수는 답변 정리 키워드와 분량으로 낸 추정치예요.</p>' : ss.aiMissing ? `<p class="notice warn" style="margin-top:10px">답변 ${ss.aiMissing}개는 AI 평가를 받지 못해 추정 점수로 표시했어요. <button class="btn small" type="button" id="btn-stage-reeval">AI 평가 다시 받기</button></p>` : ''}</div></header>`;
+  h += `<section class="panel"><div class="sec-title"><h3>질문별 훈련 결과</h3><span class="label">단계는 자동 관리 · 내려가지 않음</span></div><div class="qlist">`;
+  groups.forEach((g, i) => {
+    const last = g.tries[g.tries.length - 1], ls = last.evaluation?.score ?? null, first = g.tries[0].evaluation?.score ?? null;
+    h += `<details class="qitem"${i === 0 ? ' open' : ''}><summary><span class="qs g-${band(ls)}">${ls ?? '–'}</span><span class="qt"><b>${esc(g.qText)}</b><span>${last.mastered ? '3단계 독립 답변 성공' : `${g.tries[0].stage}단계 → 다음 ${last.nextStage}단계`} · ${g.tries.length}회${g.tries.length > 1 && first != null && ls != null ? ` · ${first}→${ls}점` : ''}</span></span><span class="chev">›</span></summary>
+      <div class="qbody">${g.tries.map((r, k) => `<div class="try"><div class="try-h"><b>${k + 1}회차 · ${r.stage}단계</b><span>${r.evaluation?.score != null ? `<span class="grade g-${band(r.evaluation.score)}">${r.evaluation.score}점</span>` : ''}<span class="src-tag">${r.skipped ? '건너뜀' : r.evaluation?.ai ? 'AI 평가' : '추정'}</span>${r.nextStage > r.stage ? '<span class="src-tag ok">단계 통과</span>' : r.mastered ? '<span class="src-tag ok">독립 답변 성공</span>' : ''}</span></div>
+        <div class="row"><span class="label">답변</span><p class="quote">${esc(r.answer || '(답변 없음)')}</p></div>
+        <div class="row"><span class="label" style="color:var(--accent)">코치 피드백</span><p>${esc(r.evaluation?.feedback || '')}</p></div>
+        ${r.evaluation?.missing?.length ? `<div class="row"><span class="label" style="color:var(--warn)">빠진 핵심</span><p class="said">${r.evaluation.missing.map(esc).join(' · ')}</p></div>` : ''}</div>`).join('')}
       </div></details>`;
   });
   h += `</div></section>`;
-  $('#report-body').innerHTML=h;
+  $('#report-body').innerHTML = h;
+  const re = $('#btn-stage-reeval');
+  if (re) re.onclick = async () => { re.disabled = true; re.textContent = '평가 받는 중…'; S.session = ss; await finishStageSession(); };
   finishRender(ss,[
     '<button class="btn primary" type="button" data-stage-train="10min">다시 10분 반복 훈련</button>',
-    '<button class="btn" type="button" id="btn-back-report">면접 리포트로 돌아가기</button>',
-    '<button class="btn" type="button" id="btn-home">준비 화면으로</button>'
+    S.lastInterview ? '<button class="btn" type="button" id="btn-back-report">면접 리포트로 돌아가기</button>' : '',
+    '<button class="btn" type="button" id="btn-copy">텍스트로 복사</button>',
+    '<button class="btn ghost" type="button" id="btn-home">준비 화면으로</button>'
   ]);
 }
-
 /* =====================================================================
    약점 집중훈련
    ===================================================================== */
@@ -4422,9 +4515,10 @@ function startDrill(key) {
   startSession('drill', { weakKey: key, items, results: [], prevInterviewId: ss.histId });
 }
 async function drillEval(key, q, a, stage, prev) {
-  const W = WEAK[key], local = weakScore(key, a, S.cfg.target);
-  const out = { score: local, feedback: '', quote: '', follow_up: W.follow, improved: '', remaining: '', tip: W.tip };
-  if (!S.cfg.ai || a.skipped) {
+  const W = WEAK[key], local = a.skipped ? null : weakScore(key, a, S.cfg.target);
+  const out = { score: local, feedback: '', quote: '', follow_up: W.follow, improved: '', remaining: '', tip: W.tip, ai: false, aiError: '', skipped: !!a.skipped };
+  if (a.skipped) { out.feedback = stage === 1 ? `답변을 건너뛰었어요. ${W.tip}` : '재답변을 건너뛰었어요.'; return out; }
+  if (!S.cfg.ai) {
     if (stage === 1) out.feedback = local == null ? `이 약점은 AI가 연결돼야 평가할 수 있어요. 팁: ${W.tip}` : `${W.label} 점수는 ${local}점이에요. ${W.tip}`;
     else out.feedback = local == null ? '재답변을 마쳤어요. 녹음을 들으며 스스로 비교해 보세요.' : `재답변 ${local}점 (1차 ${prev?.score ?? '–'}점).`;
     return out;
@@ -4459,15 +4553,22 @@ ${profileCtx(S.cfg)}
 할 일: 같은 기준으로 재답변을 평가하고 1차와 비교한다.
 JSON만: {"score":정수,"improved":"나아진 점 1문장 (없으면 빈 문자열)","remaining":"아직 남은 문제 1문장 (없으면 빈 문자열)","tip":"다음 연습 팁 1문장","feedback":"코치가 말로 전할 짧은 총평 1문장"}`;
     }
-    const j = parseJSON(await callClaude(prompt, { fast: stage === 1, maxTokens: 600 }));
+    const j = parseJSON(await callClaude(prompt, { fast: stage === 1, maxTokens: 1000 }));
+    const js = numScore(j.score);
+    if (js == null && !String(j.feedback || '').trim()) throw new Error('점수와 피드백이 비어 있어요.');
     Object.assign(out, {
-      score: local != null && W.t === 'd' ? Math.round((local + (+j.score || local)) / 2) : (Number.isFinite(+j.score) ? Math.round(+j.score) : local),
+      ai: true,
+      score: local != null && W.t === 'd' ? Math.round((local + (js ?? local)) / 2) : (js ?? local),
       feedback: politeOr(String(j.feedback || ''), stage === 1 ? `${W.label} 부분을 한 번 더 다듬어 보겠습니다. ${W.tip}` : '재답변을 잘 들었습니다.'),
       quote: String(j.quote || ''),
       follow_up: (() => { const f = asQuestion(String(j.follow_up || '')); return f && politeOK(f) && !sameQuestion(f, q.text) ? f : W.follow; })(),
       improved: String(j.improved || ''), remaining: String(j.remaining || ''), tip: String(j.tip || W.tip)
     });
-  } catch (e) { console.warn('drillEval', e); out.feedback = out.feedback || W.tip; }
+  } catch (e) {
+    console.warn('drillEval', e);
+    out.aiError = e.message || 'AI 평가 실패';
+    out.feedback = local != null ? `${W.label} 점수는 ${local}점이에요 (측정값 기준). ${W.tip}` : `AI 평가를 받지 못했어요. 훈련이 끝나면 다시 받아 볼게요. 팁: ${W.tip}`;
+  }
   return out;
 }
 function showNote(html) { const n = $('#coach-note'); n.innerHTML = html; n.hidden = false; }
@@ -4505,25 +4606,38 @@ async function drillFlow(run) {
   }
   finishSession(false);
 }
-function finishDrill() {
+async function finishDrill() {
   const ss = S.session;
-  ss.answers.forEach(a => a.m = analyzeAnswer(a));
-  // 녹음 종료 후 측정값으로 말하기 점수 갱신
+  ss.answers.forEach(a => { try { a.m = analyzeAnswer(a); } catch {} });
+  const W = WEAK[ss.weakKey];
+  // 녹음 종료 후 측정값으로 말하기 점수 갱신 (AI 없을 때)
   (ss.results || []).forEach(r => {
-    if (WEAK[ss.weakKey].t === 'd') {
-      const s1 = weakScore(ss.weakKey, r.a1, ss.cfg.target), s2 = weakScore(ss.weakKey, r.a2, ss.cfg.target);
-      if (s1 != null && !ss.cfg.ai) { r.e1.score = s1; r.e2.score = s2; }
+    if (W.t === 'd' && !ss.cfg.ai) {
+      if (!r.a1.skipped) r.e1.score = weakScore(ss.weakKey, r.a1, ss.cfg.target);
+      if (!r.a2.skipped) r.e2.score = weakScore(ss.weakKey, r.a2, ss.cfg.target);
     }
   });
+  // AI 평가를 못 받은 답변은 리포트 전에 한 번 더 받음
+  const miss = ss.cfg.ai ? (ss.results || []).flatMap(r => [[r, 1], [r, 2]]).filter(([r, k]) => !r['a' + k].skipped && !r['e' + k].ai) : [];
+  if (miss.length) {
+    showLoading('훈련 리포트를 정리하고 있어요', `AI 평가를 받지 못한 답변 ${miss.length}개를 다시 평가하고 있어요.`);
+    for (const [r, k] of miss) {
+      const ev = await drillEval(ss.weakKey, r.q, r['a' + k], k, k === 2 ? r.e1 : undefined);
+      if (ev.ai) { const keep = k === 1 ? { follow_up: r.e1.follow_up, ans: r.e1.ans, followAns: r.e1.followAns } : {}; r['e' + k] = { ...ev, ...keep }; }
+    }
+  }
   const res = ss.results || [];
   const b = res.map(r => r.e1.score).filter(v => v != null), a = res.map(r => r.e2.score).filter(v => v != null);
   ss.before = b.length ? Math.round(avg(b)) : null; ss.after = a.length ? Math.round(avg(a)) : null;
+  ss.aiMissing = ss.cfg.ai ? res.reduce((n, r) => n + (!r.a1.skipped && !r.e1.ai ? 1 : 0) + (!r.a2.skipped && !r.e2.ai ? 1 : 0), 0) : 0;
   if (res.length) {
     ss.histId ||= 'd' + ss.startedAt;
-    putHistory({ id: ss.histId, kind: 'drill', date: ss.startedAt, weakKey: ss.weakKey, label: WEAK[ss.weakKey].label, before: ss.before, after: ss.after, items: res.length,
-      weak: [{ key: ss.weakKey, label: WEAK[ss.weakKey].label }] });
+    putHistory({ id: ss.histId, kind: 'drill', date: ss.startedAt, weakKey: ss.weakKey, label: W.label, before: ss.before, after: ss.after, items: res.length,
+      weak: [{ key: ss.weakKey, label: W.label }] });
     saveSessionSnapshot(ss);
+    recordPractice(ss);
   }
+  renderHistoryBox();
   renderDrillReport(ss);
 }
 function renderDrillReport(ss) {
@@ -4535,11 +4649,12 @@ function renderDrillReport(ss) {
       <p class="rep-summary">${res.length ? (ss.before != null && ss.after != null ? (ss.after - ss.before >= 5 ? `재답변에서 평균 ${ss.after - ss.before}점이 올랐어요. 같은 방식으로 다른 질문에도 적용해 보세요.` : ss.after - ss.before <= -5 ? '재답변에서 오히려 점수가 내려갔어요. 피드백을 한 가지씩만 적용해 보세요.' : '1차와 재답변의 차이가 크지 않았어요. 아래 "남은 문제"를 하나만 골라 다시 연습해 보세요.') : '훈련을 마쳤어요. 아래에서 1차 답변과 재답변을 비교해 보세요.') : '완료한 훈련 질문이 없어요.'}</p>
       ${prevDrill ? `<div class="split"><span>지난 같은 훈련 <b>${prevDrill.before ?? '–'}→${prevDrill.after ?? '–'}</b></span><span>이번 1차 ${deltaChip(ss.before, prevDrill.before)} (지난 훈련 1차 대비)</span></div>` : ''}
       ${!ss.cfg.ai && W.t === 'c' ? '<p class="notice warn" style="margin-top:10px">내용 약점은 AI가 연결돼야 점수를 매길 수 있어요. 녹음과 받아쓰기로 직접 비교해 보세요.</p>' : ''}
+      ${ss.aiMissing ? `<p class="notice warn" style="margin-top:10px">답변 ${ss.aiMissing}개는 AI 평가를 받지 못했어요. <button class="btn small" type="button" id="btn-drill-reeval">AI 평가 다시 받기</button></p>` : ''}
     </div></header>`;
   h += `<section><div class="sec-title"><h3>질문별 훈련 결과</h3><span class="label">1차 → 꼬리질문 → 재답변</span></div><div class="qlist">`;
   res.forEach((r, i) => {
     const s1 = r.e1.score, s2 = r.e2.score, m1 = r.a1.m, m2 = r.a2.m;
-    h += `<details class="qitem"${i === 0 ? ' open' : ''}><summary><span class="qs g-${band(s2)}">${s2 ?? '–'}</span><span class="qt"><b>${esc(r.q.text)}</b><span>1차 ${s1 ?? '–'} → 재답변 ${s2 ?? '–'}</span></span><span class="chev" aria-hidden="true">›</span></summary>
+    h += `<details class="qitem"${i === 0 ? ' open' : ''}><summary><span class="qs g-${band(s2)}">${s2 ?? '–'}</span><span class="qt"><b>${esc(r.q.text)}</b><span>1차 ${r.a1.skipped ? '건너뜀' : s1 ?? '–'} → 재답변 ${r.a2.skipped ? '건너뜀' : s2 ?? '–'}</span></span><span class="chev" aria-hidden="true">›</span></summary>
       <div class="qbody">
         <div class="cmp"><div class="bars">
           <div><span>1차</span><span class="t"><i class="fill-${band(s1)}" style="width:${s1 ?? 0}%"></i></span><b>${s1 ?? '–'}</b></div>
@@ -4563,6 +4678,8 @@ function renderDrillReport(ss) {
   });
   h += `</div></section>` + playerHtml(ss);
   $('#report-body').innerHTML = h;
+  const rb = $('#btn-drill-reeval');
+  if (rb) rb.onclick = async () => { rb.disabled = true; rb.textContent = '평가 받는 중…'; S.session = ss; await finishDrill(); };
   finishRender(ss, [
     `<button class="btn primary" type="button" data-drill="${ss.weakKey}">같은 약점 다시 훈련</button>`,
     S.lastInterview ? '<button class="btn" type="button" id="btn-back-report">면접 리포트로 돌아가기</button>' : '',
