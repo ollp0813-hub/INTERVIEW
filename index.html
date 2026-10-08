@@ -433,6 +433,17 @@ kbd{font:500 .75rem var(--f-mono);padding:1px 6px;border:1px solid var(--line);b
 .seg-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .seg button{display:grid;gap:1px;padding:8px 6px;border-radius:9px;border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:center;transition:all .18s var(--ease)}
 .seg-2 button{text-align:left;padding:10px 12px}
+.plan-item{position:relative}
+#question-plan .plan-item{grid-template-columns:28px 80px minmax(0,1fr) 30px}
+.plan-x{width:28px;height:28px;border-radius:50%;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;font-size:.8rem;line-height:1;align-self:center;transition:all .15s var(--ease)}
+.plan-x:hover,.plan-x:focus-visible{color:var(--bad,#c0392b);border-color:var(--line);background:var(--surface)}
+.plan-tip{font-weight:400;color:var(--muted);font-size:.72rem;margin-left:6px}
+.excl-box{margin-top:10px}#excl-list .plan-item{grid-template-columns:34px minmax(0,1fr) auto;align-items:center}#excl-list .plan-item .cat{display:none}#btn-excl-all{margin-top:8px}
+.dept-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:12px 0 4px;padding:10px 12px;border-radius:10px;background:var(--sunk)}
+.dept-pick .label{margin-right:4px}.dept-pick small{flex-basis:100%;color:var(--muted);font-size:.72rem}
+.dept-pick button{font:600 .8rem var(--f-body);padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-height:32px}
+.dept-pick button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+@media(max-width:760px){#question-plan .plan-item{grid-template-columns:22px 64px minmax(0,1fr) 34px}.plan-x{width:34px;height:34px}}
 .src-seg{margin:2px 0 12px}.src-seg button{padding:12px 14px}.src-seg button b{font-size:.92rem}
 .src-hint{font-size:.84rem;color:var(--muted);line-height:1.6;margin:0 0 10px}.src-hint b{color:var(--ink);font-weight:600}
 textarea#aiQuestions{min-height:200px;line-height:1.7;font-size:.9rem;margin-top:10px}
@@ -926,9 +937,12 @@ textarea#answer{min-height:120px;border-radius:12px}
               <button type="button" data-len="all" aria-pressed="false"><b>전부</b><small id="len-all">-</small></button>
             </div>
             <div class="missing" id="missing-basics" hidden></div>
-            <div class="plan-head"><span class="label">물어볼 질문</span><button class="btn small ghost" id="btn-plan-questions" type="button">다시 뽑기</button></div>
+            <div class="dept-pick" id="dept-pick" hidden></div>
+            <input type="hidden" id="deptPick" value="">
+            <div class="plan-head"><span><span class="label">물어볼 질문</span><small class="plan-tip">빼려면 ✕</small></span><button class="btn small ghost" id="btn-plan-questions" type="button">다시 뽑기</button></div>
             <div class="plan-list plan-live" id="question-plan"></div>
             <p class="hint" id="question-plan-out" aria-live="polite"></p>
+            <details class="adv excl-box" id="excl-box" hidden><summary>뺀 질문 <span class="auto-chip" id="excl-n">0</span></summary><div class="plan-list" id="excl-list"></div><button class="btn small ghost" id="btn-excl-all" type="button">모두 다시 넣기</button></details>
             <details class="adv more">
               <summary>고급 설정 <span class="opt">고르는 방식 · 분류별 개수</span></summary>
               <div class="fields" style="margin-top:8px">
@@ -1365,7 +1379,7 @@ const S = { run: 0, phase: 'idle', pending: null, cfg: null, t0: 0, audio: null,
   planCache: null, aiCats: {}, aiCatsVer: 0, aiStatus: 'none', aiMsg: '' };
 
 const KEY = 'interview-coach.v2', HKEY = 'interview-coach.history.v2', V1KEY = 'interview-coach.v1', TKEY = 'interview-coach.training.v4', SKEY = 'interview-coach.sessions.v4';
-const FIELDS = ['school', 'phrasing', 'univ', 'dept', 'track', 'itype', 'memo', 'record', 'questions', 'answerScripts', 'aiQuestions', 'qSource', 'followups', 'target', 'order', 'voice', 'rate', 'model', 'fastmodel', 'gen-n', 'serverUrl'];
+const FIELDS = ['school', 'phrasing', 'univ', 'dept', 'track', 'itype', 'memo', 'record', 'questions', 'answerScripts', 'aiQuestions', 'qSource', 'deptPick', 'followups', 'target', 'order', 'voice', 'rate', 'model', 'fastmodel', 'gen-n', 'serverUrl'];
 const CHECKS = ['autorec', 'opening', 'recordAudio', 'subtitles', 'remember'];
 const readJSON = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
 const writeJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
@@ -1376,7 +1390,7 @@ function save() {
   o.style = styleVal();
   o.apikey = o.remember ? $('#apikey').value : '';
   o.trainingStage = +($('input[name=trainingStage]:checked')?.value || 2);
-  o.hints = S.hints; o.recordAnalysis = S.recordAnalysis; o.aiCats = S.aiCats;
+  o.hints = S.hints; o.recordAnalysis = S.recordAnalysis; o.aiCats = S.aiCats; o.excluded = S.excluded;
   o.genCats = $$('#gen-cats input:checked').map(x => x.value);
   o.docs = { ...S.docs };
   o.questionSelection = { count: S.questionSelection.count, balance: S.questionSelection.balance, caps: getCaps(), basics: getBasicCatSelection() };
@@ -1501,6 +1515,7 @@ if (Array.isArray(saved.genCats)) $$('#gen-cats input').forEach(x => x.checked =
 S.hints = saved.hints || {};
 S.recordAnalysis = saved.recordAnalysis || null;
 S.aiCats = saved.aiCats && typeof saved.aiCats === 'object' ? saved.aiCats : {};
+S.excluded = saved.excluded && typeof saved.excluded === 'object' ? saved.excluded : {}; S.exclVer = 0;
 if (saved.docs) S.docs = { ...S.docs, ...saved.docs };
 if (saved.questionSelection) S.questionSelection = { ...S.questionSelection, ...saved.questionSelection };
 
@@ -1653,7 +1668,8 @@ function renderScriptMap() {
 let _qCache = { raw: null, scripts: null, out: [] };
 function parseQuestions() {
   const ai = isAiSource(), raw = qBox().value, scripts = ai ? [] : parseAnswerScripts(), dept = ($('#dept')?.value || '').replace(/\s+/g, '');
-  if (raw === _qCache.raw && scripts === _qCache.scripts && _qCache.ver === S.aiCatsVer && _qCache.dept === dept) return _qCache.out;
+  const dpick = $('#deptPick')?.value || '';
+  if (raw === _qCache.raw && scripts === _qCache.scripts && _qCache.ver === S.aiCatsVer && _qCache.dept === dept && _qCache.dpick === dpick && _qCache.excl === S.exclVer) return _qCache.out;
   const seen = new Set(), out = [];
   let section = null;                       // 제목 줄로 정한 분류 (null = 없음, '' = 공통)
   raw.split('\n').forEach((line, lineIndex) => {
@@ -1691,13 +1707,20 @@ function parseQuestions() {
     out.push({ id, lineIndex, text: l, say, cat, src, hints: S.hints[l] || [], answerScript: scripts[id - 1] || '', dup, dupWhy: dup ? 'same' : '', deptTag: dtag });
   });
   // "(영제)", "(방콘)"처럼 학과 표시가 붙은 질문: 지원 학과와 다른 쪽은 빼고, 소리 내어 읽으면 같은 질문은 한 번만
-  // 지원 학과가 비어 있으면 목록에서 처음 나온 학과 표시를 기준으로 삼음 (한 면접에 두 학과용 질문이 섞이지 않게)
-  const firstTag = out.find(q => q.deptTag)?.deptTag.replace(/과$/, '') || '';
-  const sameTag = (a, b) => { a = a.replace(/과$/, ''); b = b.replace(/과$/, ''); return a.startsWith(b) || b.startsWith(a); };
-  out.forEach(q => { if (!q.dup && q.deptTag && (dept ? !deptMatches(q.deptTag, dept) : !sameTag(q.deptTag, firstTag))) { q.dup = true; q.dupWhy = 'dept'; } });
+  // 학과 표시가 붙은 질문은 한 면접에 한 학과만: 직접 고른 학과 → ① 지원 학과와 맞는 학과 → 목록에서 처음 나온 학과 순
+  const groups = deptGroups(out), active = activeDeptGroup(groups, dept, dpick);
+  out.forEach(q => { if (!q.dup && q.deptTag && active && !sameDeptTag(q.deptTag, active)) { q.dup = true; q.dupWhy = 'dept'; } });
+  // 표시는 없어도 문장에 다른 학과 이름이 들어 있으면("영상제작과에 지원한 이유는?") 그 학과용으로 봄
+  if (groups.length > 1) out.forEach(q => {
+    if (q.dup || q.deptTag) return;
+    const names = q.text.match(/[가-힣]{2,12}과(?=[^가-힣]|에|를|은|는|이|의|로|와|$)/g) || [];
+    const g = names.map(n => groups.find(t => deptMatches(t, n))).find(Boolean);
+    if (g && !sameDeptTag(g, active)) { q.dup = true; q.dupWhy = 'dept'; }
+  });
+  out.forEach(q => { if (!q.dup && S.excluded?.[normText(q.text)]) { q.dup = true; q.dupWhy = 'off'; } });
   const bySay = new Map();
   out.forEach(q => { if (q.dup) return; const k = normText(q.say); const first = bySay.get(k); if (!first) { bySay.set(k, q); return; } q.dup = true; q.dupWhy = 'same'; });
-  _qCache = { raw, scripts, out, ver: S.aiCatsVer, dept };
+  _qCache = { raw, scripts, out, ver: S.aiCatsVer, dept, dpick, excl: S.exclVer, groups, active };
   return out;
 }
 /* 지금 연습할 질문 목록 (내 질문 / AI 질문) */
@@ -1716,9 +1739,17 @@ function deptTagOf(text) {
   if (!/^[가-힣]{2,6}$/.test(t) || /확인|연결|참고|메모|예상|체크|중요|필수|추가|공통|질문|답변|꼬리/.test(t) || headerCat(t) !== null || CAT_FUZZY.some(([re]) => re.test(t))) return '';
   return t;
 }
+/* 학과 표시 묶기: (영제)·(영제과)는 같은 학과 */
+function sameDeptTag(a, b) { a = String(a).replace(/과$/, ''); b = String(b).replace(/과$/, ''); return !!a && !!b && (a.startsWith(b) || b.startsWith(a)); }
+function deptGroups(qs) { return qs.map(q => q.deptTag).filter(Boolean).reduce((g, t) => g.some(x => sameDeptTag(x, t)) ? g : g.concat(t), []); }
+function activeDeptGroup(groups, dept, pick) {
+  if (!groups.length) return '';
+  return groups.find(g => pick && sameDeptTag(g, pick)) || (dept && groups.find(g => deptMatches(g, dept))) || groups[0];
+}
 /* "방콘제과" ↔ "방송콘텐츠제작과": 줄임말 글자가 학과 이름에 순서대로 들어 있으면 같은 학과 */
 function deptMatches(tag, dept) {
   const t = tag.replace(/과$/, ''); let i = 0;
+  if (!t) return false;
   for (const ch of dept) if (ch === t[i]) i++;
   return i >= t.length;
 }
@@ -1791,7 +1822,7 @@ function scheduleSetupUpdate() {
   clearTimeout(_setupTimer);
   _setupTimer = setTimeout(() => {
     if (checkBulkImport()) return;
-    const raw = $('#qSource').value + '|' + qBox().value;
+    const raw = $('#qSource').value + '|' + $('#dept').value + '|' + qBox().value;
     if (raw !== _lastQRaw) { _lastQRaw = raw; renderQuestionSelector(); scheduleAiClassify(); }   // 질문이 바뀌면 분류 목록 갱신 + AI 분류 예약
     else updateQuestionSelectorStatus();
     updateMode(); save();
@@ -1843,9 +1874,9 @@ function importQADoc(items, from, prev = {}) {
   renderQuestionSelector(); scheduleAiClassify(); save();
   const qs = parseQuestions(), linked = qs.filter(q => q.answerScript).length;
   const skipped = qs.filter(q => q.dup).length;
-  const tags = qs.map(q => q.deptTag).filter(Boolean).reduce((a, t) => a.some(x => x.replace(/과$/, '').startsWith(t.replace(/과$/, '')) || t.replace(/과$/, '').startsWith(x.replace(/과$/, ''))) ? a : a.concat(t), []);
+  const tags = deptGroups(qs);
   const msg = `질문 ${qs.length}개 · 답변 ${linked}개를 연결했어요.` + (skipped ? ` 같은 질문이나 다른 학과용 질문 ${skipped}개는 이번 면접에서 빼요.` : '');
-  const deptNote = tags.length > 1 ? ` 학과 표시(${tags.join('·')})가 붙은 질문은 ① 지원 정보의 학과에 맞는 것만 물어요${$('#dept').value.trim() ? '' : ' — 학과를 비워 두면 처음 나온 학과 기준'}.` : '';
+  const deptNote = tags.length > 1 ? ` 학과 표시(${tags.join('·')})가 붙은 질문은 한 면접에 한 학과만 물어요. 오른쪽 "이번 면접 구성"에서 학과를 바꿀 수 있어요.` : '';
   $('#import-out').textContent = msg + ' 분류는 질문과 답변 내용을 보고 자동으로 나눴어요.' + deptNote;
   if ($('#script-out')) $('#script-out').textContent = '';
   const oldN = boxQuestionTexts(before.q).length;
@@ -2423,7 +2454,7 @@ function updateCatReviewSummary() {
 function renderCatReview() {
   const list = $('#cat-list'); if (!list) return;
   const qs = parseQuestions();
-  list.innerHTML = qs.map(q => `<div class="plan-item"><span class="num">Q${q.id}</span><select data-line="${q.lineIndex}" aria-label="Q${q.id} 분류">${catOptions(q.cat)}</select><span class="qt">${esc(q.text)}<span class="cat-src ${q.src}">· ${SRC_LABEL[q.src]}${q.dup ? (q.dupWhy === 'dept' ? ' · 다른 학과용' : ' · 중복') : ''}${q.answerScript ? ' · 답변 연결' : ''}</span></span></div>`).join('') || '<p class="sub" style="margin:0">질문을 적으면 여기에 분류가 보여요.</p>';
+  list.innerHTML = qs.map(q => `<div class="plan-item"><span class="num">Q${q.id}</span><select data-line="${q.lineIndex}" aria-label="Q${q.id} 분류">${catOptions(q.cat)}</select><span class="qt">${esc(q.text)}<span class="cat-src ${q.src}">· ${SRC_LABEL[q.src]}${q.dup ? (q.dupWhy === 'dept' ? ' · 다른 학과용' : q.dupWhy === 'off' ? ' · 뺀 질문' : ' · 중복') : ''}${q.answerScript ? ' · 답변 연결' : ''}</span></span></div>`).join('') || '<p class="sub" style="margin:0">질문을 적으면 여기에 분류가 보여요.</p>';
 }
 /* 줄 앞의 분류 표시를 바꿈 — 줄 순서는 그대로라 답변 정리 번호가 어긋나지 않음 */
 const TAG_RE = /^(\s*)(?:\[[^\]]{1,15}\]|【[^】]{1,15}】|<[^>]{1,15}>)\s*/;
@@ -2576,7 +2607,7 @@ function orderQuestions(list, order) {
   return a.sort((x, y) => flowRank(catKey(x)) - flowRank(catKey(y)) || x.id - y.id);   // flow · adaptive
 }
 const ORDER_NOTE = { adaptive: '시작 순서는 이 목록과 같고, 이후에는 면접관이 답변 흐름에 맞춰 남은 질문 중에서 고릅니다.', flow: '이 순서대로 물어요.', seq: '적은 순서대로 물어요.', shuffle: '이 순서대로 물어요 (무작위로 섞은 결과).' };
-function planSignature(opt) { return JSON.stringify([$('#qSource').value, qBox().value, $('#dept').value, opt.count, opt.mode, opt.caps, opt.basics]); }
+function planSignature(opt) { return JSON.stringify([$('#qSource').value, qBox().value, $('#dept').value, $('#deptPick').value, Object.keys(S.excluded || {}).sort(), opt.count, opt.mode, opt.caps, opt.basics]); }
 function updateQuestionSelectorStatus() {
   const all = parseQuestions(), opt = selectionOptions();
   const dry = selectQuestions(all, opt, true);
@@ -2596,7 +2627,8 @@ function updateQuestionSelectorStatus() {
 }
 function renderPlanPreview(plan) {
   $('#question-plan').hidden = false;
-  $('#question-plan').innerHTML = plan.map((q, i) => `<div class="plan-item${q.basic ? ' basic' : ''}"><span class="num">${i + 1}</span><span class="cat">${esc(catLabel(catKey(q)))}</span><span class="qt" title="질문 목록의 Q${q.id}">${esc(q.text)}${q.basic ? '<span class="basic-tag">기본</span>' : ''}</span></div>`).join('') || '<div class="notice warn">조건에 맞는 질문이 없어요. 아래 "고급 설정 → 분류별로 물을 개수"를 확인해 주세요.</div>';
+  $('#question-plan').innerHTML = plan.map((q, i) => `<div class="plan-item${q.basic ? ' basic' : ''}"><span class="num">${i + 1}</span><span class="cat">${esc(catLabel(catKey(q)))}</span><span class="qt" title="질문 목록의 Q${q.id}">${esc(q.text)}${q.basic ? '<span class="basic-tag">기본</span>' : ''}</span><button class="plan-x" type="button" data-exclude="${q.id}" title="이 질문 빼기" aria-label="${esc(q.text)} 빼기">✕</button></div>`).join('') || '<div class="notice warn">조건에 맞는 질문이 없어요. 아래 "고급 설정 → 분류별로 물을 개수"를 확인해 주세요.</div>';
+  renderExcluded(); renderDeptPick();
 }
 /* 설정이나 질문이 바뀌면 자동으로 다시 고르고, 그대로 화면에 보여 줌. 시작하면 보이는 그대로 물음.
    reroll: "다시 뽑기" — 지금 보이는 질문은 뒤로 미루고 다른 질문부터 고름 */
@@ -2624,6 +2656,59 @@ function previewQuestionPlan() {
   save();
   return plan;
 }
+/* ---------- 물어볼 질문에서 빼기 / 다시 넣기 ----------
+   뺀 질문은 질문 문장으로 기억해서 다음 면접에서도 빠짐. 나머지 구성은 그대로 두고 빈자리만 채움 */
+function excludeQuestion(id) {
+  const all = parseQuestions(), q = all.find(x => x.id === id); if (!q) return;
+  const keep = (S.planCache?.ids || []).filter(x => x !== id);
+  S.excluded = { ...(S.excluded || {}), [normText(q.text)]: 1 }; S.exclVer++;
+  const opt = selectionOptions(), order = $('#order').value, now = parseQuestions();
+  const byId = new Map(now.map(x => [x.id, x]));
+  let plan = keep.map(x => byId.get(x)).filter(x => x && !x.dup);
+  const capOf = c => { const v = opt.caps[c]; return v == null || v === 'all' ? Infinity : +v; };
+  const per = {}; plan.forEach(x => per[catKey(x)] = (per[catKey(x)] || 0) + 1);
+  if (plan.length < opt.count) {
+    const used = new Set(plan.map(x => x.id));
+    const cand = selectQuestions(now, opt, true, new Set(keep)).concat(now.filter(x => !x.dup));
+    const add = cand.find(x => !used.has(x.id) && catKey(x) !== '마무리' && (per[catKey(x)] || 0) < capOf(catKey(x)));
+    if (add) plan.push(add);
+  }
+  plan = orderQuestions(plan, order);
+  S.planCache = { sig: planSignature(opt), ids: plan.map(x => x.id), order };
+  save(); renderQuestionSelector();
+  showToast(`"${q.text.slice(0, 24)}${q.text.length > 24 ? '…' : ''}"을(를) 뺐어요.`, '되돌리기', () => includeQuestion(q.text));
+}
+function includeQuestion(text) {
+  const k = normText(text); if (!S.excluded?.[k]) return;
+  const ex = { ...S.excluded }; delete ex[k]; S.excluded = ex; S.exclVer++;
+  save(); renderQuestionSelector();
+}
+function renderExcluded() {
+  const box = $('#excl-box'); if (!box) return;
+  const qs = parseQuestions().filter(q => q.dupWhy === 'off');
+  box.hidden = !qs.length; $('#excl-n').textContent = qs.length + '개';
+  $('#excl-list').innerHTML = qs.map(q => `<div class="plan-item"><span class="num">Q${q.id}</span><span class="cat">${esc(catLabel(catKey(q)))}</span><span class="qt">${esc(q.text)}</span><button class="btn small ghost" type="button" data-include="${q.id}">다시 넣기</button></div>`).join('');
+}
+/* 학과 표시가 있는 질문이면 이번 면접 학과를 고르는 버튼 */
+function renderDeptPick() {
+  const el = $('#dept-pick'); if (!el) return;
+  parseQuestions();
+  const groups = _qCache.groups || [], active = _qCache.active || '';
+  el.hidden = groups.length < 2;
+  if (groups.length < 2) return;
+  const auto = !$('#deptPick').value;
+  el.innerHTML = `<span class="label">이번 면접 학과</span>` + groups.map(g => `<button type="button" data-dtag="${esc(g)}" aria-pressed="${sameDeptTag(g, active)}">${esc(g)}</button>`).join('') +
+    `<small>${auto ? ($('#dept').value.trim() ? '① 학과에 맞춰 자동 선택' : '① 학과가 비어 있어 첫 학과로 선택') : '직접 고름'} · 다른 학과용 질문은 빠져요</small>`;
+}
+document.addEventListener('click', e => {
+  const x = e.target.closest('[data-exclude]'); if (x) { excludeQuestion(+x.dataset.exclude); return; }
+  const inc = e.target.closest('[data-include]');
+  if (inc) { const q = parseQuestions().find(q => q.id === +inc.dataset.include); if (q) includeQuestion(q.text); return; }
+  const d = e.target.closest('#dept-pick [data-dtag]');
+  if (d) { $('#deptPick').value = d.dataset.dtag; S.planCache = null; _lastQRaw = null; save(); renderQuestionSelector(); }
+});
+$('#btn-excl-all').onclick = () => { S.excluded = {}; S.exclVer++; save(); renderQuestionSelector(); showToast('뺀 질문을 모두 다시 넣었어요.'); };
+
 /* 자기소개 · 지원동기 · 마무리처럼 거의 항상 나오는 질문이 목록에 없으면 알려 주고 한 번에 넣기 */
 const MUST_HAVE = ['자기소개', '지원동기', '마무리'];
 function updateMissingBasics(all) {
@@ -4584,7 +4669,7 @@ renderRecordAnalysis();
 renderHistoryBox();
 renderDocs();
 renderQuestionSelector();
-_lastQRaw = $('#qSource').value + '|' + qBox().value; _lastSRaw = $('#answerScripts').value; _bulkQ = $('#questions').value;
+_lastQRaw = $('#qSource').value + '|' + $('#dept').value + '|' + qBox().value; _lastSRaw = $('#answerScripts').value; _bulkQ = $('#questions').value;
 // 예전 버전에서 질문+답변 문서를 통째로 넣어 둔 경우: 처음 열 때 한 번 질문 목록과 답변 정리로 나눠 연결
 {
   const dq = parseQADoc($('#questions').value), ds = dq ? null : parseQADoc($('#answerScripts').value);
