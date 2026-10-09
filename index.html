@@ -775,7 +775,7 @@ textarea#answer{min-height:120px;border-radius:12px}
 <body>
 <div class="wrap">
   <header class="topbar">
-    <div class="brand"><h1>입시 면접 코치 스튜디오</h1><span>대학 입시 1:1 음성 모의면접 · V5</span></div>
+    <div class="brand"><h1>입시 면접 코치 스튜디오</h1><span>대학 입시 1:1 음성 모의면접 · V6</span></div>
     <ol class="steps" aria-label="진행 단계">
       <li id="st-setup" class="on">준비</li><li id="st-int">면접</li><li id="st-rep">리포트</li><li id="st-drill">약점 훈련</li>
     </ol>
@@ -2788,13 +2788,15 @@ $('#btn-preset-off').onclick = () => {
 
 function selectQuestions(all, opt, rotate = true, avoid = null) {
   const asked = { ...(rotate ? askedCounts() : {}) };
-  if (avoid) all.forEach(q => { if (avoid.has(q.id)) { const k = normText(q.text); asked[k] = (asked[k] || 0) + 0.5; } });
+  // 덜 물어본 질문 우선. "다시 뽑기"면 지금 보이는 질문은 크게 뒤로 미룸. 같은 조건끼리는 무작위
+  const tie = new Map(all.map(q => [q.id, Math.random()]));
+  const fresh = q => (asked[normText(q.text)] || 0) + (avoid && avoid.has(q.id) ? 100 : 0);
+  const byFreshness = (a, b) => fresh(a) - fresh(b) || tie.get(a.id) - tie.get(b.id);
   const capOf = c => { const v = opt.caps[c]; return v == null || v === 'all' ? Infinity : +v; };
   const pool = all.filter(q => !q.dup && capOf(catKey(q)) > 0);
   const taken = {}, chosen = [], used = new Set();
   const can = q => !used.has(q.id) && (taken[catKey(q)] || 0) < capOf(catKey(q));
   const take = q => { used.add(q.id); taken[catKey(q)] = (taken[catKey(q)] || 0) + 1; chosen.push(q); };
-  const byFreshness = (a, b) => (asked[normText(a.text)] || 0) - (asked[normText(b.text)] || 0) || a.id - b.id;
   const closingList = pool.filter(q => catKey(q) === '마무리').sort(byFreshness);
   const closing = closingList.length && opt.count > 1 ? closingList[0] : null;   // 마무리는 "안 물음"이 아니면 항상 맨 끝에 1개
   const limit = opt.count - (closing ? 1 : 0);
@@ -2802,18 +2804,22 @@ function selectQuestions(all, opt, rotate = true, avoid = null) {
   if (opt.mode === 'sequential') {
     body.forEach(q => { if (chosen.length < limit && can(q)) take(q); });
   } else if (opt.mode === 'random') {
-    const a = body.slice();
-    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-    a.sort((x, y) => (asked[normText(x.text)] || 0) - (asked[normText(y.text)] || 0));
-    a.forEach(q => { if (chosen.length < limit && can(q)) take(q); });
+    body.slice().sort(byFreshness).forEach(q => { if (chosen.length < limit && can(q)) take(q); });
   } else {
-    const cats = [...new Set(body.map(catKey))].sort((a, b) => flowRank(a) - flowRank(b));
+    const cats = [...new Set(body.map(catKey))];
     const lists = new Map(cats.map(c => [c, body.filter(q => catKey(q) === c).sort(byFreshness)]));
-    cats.forEach(c => { if (opt.basics.includes(c) && chosen.length < limit) { const q = lists.get(c).find(can); if (q) take(q); } });
+    const basicCats = cats.filter(c => opt.basics.includes(c)).sort((a, b) => flowRank(a) - flowRank(b));
+    // 자리가 넉넉하면 기본 분류를 모두 넣고, 짧은 면접이면 자기소개·지원동기만 고정하고 나머지는 돌아가며 나오게 함
+    const must = limit >= basicCats.length + 2 ? basicCats : basicCats.filter(c => ['자기소개', '지원동기'].includes(c));
+    must.forEach(c => { if (chosen.length < limit) { const q = lists.get(c).find(can); if (q) take(q); } });
+    const minFresh = c => { const l = lists.get(c).filter(can); return l.length ? fresh(l[0]) : Infinity; };
     for (let guard = 0; chosen.length < limit && guard < 200; guard++) {
-      let added = false;
-      for (const c of cats) { if (chosen.length >= limit) break; const q = lists.get(c).find(can); if (q) { take(q); added = true; } }
-      if (!added) break;
+      // 매 바퀴 분류 순서: 덜 물어본 분류 → 기본 분류 → 무작위
+      const order = cats.filter(c => lists.get(c).some(can))
+        .map(c => [c, minFresh(c) + (taken[c] || 0) * 1.5 - (opt.basics.includes(c) ? 0.4 : 0) + Math.random() * 0.9])
+        .sort((a, b) => a[1] - b[1]).map(x => x[0]);
+      if (!order.length) break;
+      for (const c of order) { if (chosen.length >= limit) break; const q = lists.get(c).find(can); if (q) take(q); }
     }
   }
   if (closing && can(closing)) take(closing);
@@ -2832,9 +2838,9 @@ function orderQuestions(list, order) {
 }
 const ORDER_NOTE = { adaptive: '시작 순서는 이 목록과 같고, 이후에는 면접관이 답변 흐름에 맞춰 남은 질문 중에서 고릅니다.', flow: '이 순서대로 물어요.', seq: '적은 순서대로 물어요.', shuffle: '이 순서대로 물어요 (무작위로 섞은 결과).' };
 function planSignature(opt) { return JSON.stringify([$('#qSource').value, qBox().value, $('#dept').value, $('#deptPick').value, Object.keys(S.excluded || {}).sort(), opt.count, opt.mode, opt.caps, opt.basics]); }
-function updateQuestionSelectorStatus() {
+function updateQuestionSelectorStatus(force = false, reroll = false) {
   const all = parseQuestions(), opt = selectionOptions();
-  const dry = selectQuestions(all, opt, true);
+  const dry = refreshPlanPreview(force, reroll);          // 요약도 화면에 보이는 구성 그대로 셈
   const cats = currentQuestionCategories();
   $('#question-cat-count').textContent = `${getQuestionCatSelection().length}/${cats.length} 분류 사용`;
   const per = {};
@@ -2843,13 +2849,13 @@ function updateQuestionSelectorStatus() {
   $('#question-cat-summary').textContent = `정리한 ${all.length - dups}개 중 ${dry.length}개를 물어요` +
     (dry.length ? ' · ' + Object.entries(per).sort((a, b) => flowRank(a[0]) - flowRank(b[0])).map(([c, n]) => `${catLabel(c)} ${n}`).join(' · ') : '') +
     (dry.length < opt.count ? ` · 조건에 맞는 질문이 ${dry.length}개뿐이에요` : '') +
-    (dups ? ` · 같은 질문·다른 학과용 ${dups}줄은 빼고 써요` : '');
-  refreshPlanPreview(false);
+    (dups ? ` · 같은 질문·다른 학과용·뺀 질문 ${dups}줄은 빼고 써요` : '');
   updateMissingBasics(all);
   updateCatReviewSummary();
   updateCount(false);
 }
 function renderPlanPreview(plan) {
+  const po = selectionOptions(); plan.forEach(q => q.basic = po.mode === 'balanced' && po.basics.includes(catKey(q)));   // 목록이 다시 읽혀도 '기본' 표시 유지
   $('#question-plan').hidden = false;
   $('#question-plan').innerHTML = plan.map((q, i) => `<div class="plan-item${q.basic ? ' basic' : ''}"><span class="num">${i + 1}</span><span class="cat">${esc(catLabel(catKey(q)))}</span><span class="qt" title="질문 목록의 Q${q.id}">${esc(q.text)}${q.basic ? '<span class="basic-tag">기본</span>' : ''}</span><button class="plan-x" type="button" data-exclude="${q.id}" title="이 질문 빼기" aria-label="${esc(q.text)} 빼기">✕</button></div>`).join('') || '<div class="notice warn">조건에 맞는 질문이 없어요. 아래 "고급 설정 → 분류별로 물을 개수"를 확인해 주세요.</div>';
   renderExcluded(); renderDeptPick();
@@ -2876,9 +2882,9 @@ function refreshPlanPreview(force, reroll = false) {
 function previewQuestionPlan() {
   const opt = selectionOptions();
   S.questionSelection = { ...S.questionSelection, count: opt.count, balance: opt.mode, caps: opt.caps, basics: opt.basics };
-  const plan = refreshPlanPreview(true, true);
+  updateQuestionSelectorStatus(true, true);
   save();
-  return plan;
+  return S.planCache ? S.planCache.ids : [];
 }
 /* ---------- 물어볼 질문에서 빼기 / 다시 넣기 ----------
    뺀 질문은 질문 문장으로 기억해서 다음 면접에서도 빠짐. 나머지 구성은 그대로 두고 빈자리만 채움 */
