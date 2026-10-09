@@ -164,16 +164,11 @@ details.adv[open] summary{margin-bottom:12px}
 .avatar{position:relative;width:96px;height:96px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center}
 .avatar::before,.avatar::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--accent);opacity:0}
 .avatar svg{width:46px;height:46px;color:var(--accent)}
-.avatar.speaking::before{animation:ring 1.25s ease-out infinite}
-.avatar.speaking::after{animation:ring 1.25s ease-out .62s infinite}
-.avatar.listening::before{animation:listenRing 1.05s ease-out infinite}
-.avatar.listening::after{animation:listenRing 1.05s ease-out .52s infinite}
-.avatar.speaking,.avatar.listening{animation:voicePulse .9s ease-in-out infinite}
+.avatar.speaking::before{animation:ring 1.6s ease-out infinite}
+.avatar.speaking::after{animation:ring 1.6s ease-out .8s infinite}
 .avatar.thinking{animation:breathe 1.4s ease-in-out infinite}
-@keyframes ring{0%{transform:scale(.92);opacity:.78}100%{transform:scale(1.32);opacity:0}}
-@keyframes listenRing{0%{transform:scale(.94);opacity:.62}70%{transform:scale(1.18);opacity:.22}100%{transform:scale(1.28);opacity:0}}
-@keyframes voicePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
-@media (prefers-reduced-motion:reduce){.avatar.speaking,.avatar.listening,.avatar.speaking::before,.avatar.speaking::after,.avatar.listening::before,.avatar.listening::after{animation:none!important}}
+@keyframes ring{0%{transform:scale(.92);opacity:.7}100%{transform:scale(1.25);opacity:0}}
+@keyframes breathe{50%{transform:scale(.94);opacity:.7}}
 .coach-state{font-size:.8rem;color:var(--muted);text-align:center}
 .cue-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px 26px;min-width:0}
 .cue-card.scene{background:var(--sunk);border-style:dashed}
@@ -319,9 +314,7 @@ kbd{font:500 .75rem var(--f-mono);padding:1px 6px;border:1px solid var(--line);b
 .plist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .plist li{display:flex;gap:8px;align-items:baseline;font-size:.86rem;line-height:1.55}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font:600 .8rem var(--f-body);padding:6px 10px;border-radius:8px;background:var(--sunk);color:var(--ink);line-height:1.4;white-space:normal;word-break:keep-all}
-.stage-box .chips{display:flex;flex-wrap:wrap;gap:7px;align-items:flex-start}
-.stage-box .chip{display:inline-flex;max-width:100%;align-items:center}
+.chip{font:500 .74rem var(--f-mono);padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted)}
 .chip.warn{background:var(--warn-soft);color:var(--warn)}
 .rep-actions{display:flex;gap:10px;flex-wrap:wrap}
 .loading{display:grid;justify-items:center;gap:14px;padding:60px 20px;text-align:center;color:var(--muted)}
@@ -451,8 +444,15 @@ kbd{font:500 .75rem var(--f-mono);padding:1px 6px;border:1px solid var(--line);b
 .dept-pick button{font:600 .8rem var(--f-body);padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-height:32px}
 .dept-pick button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 @media(max-width:760px){#question-plan .plan-item{grid-template-columns:22px 64px minmax(0,1fr) 34px}.plan-x{width:34px;height:34px}}
+.try{padding:12px 0;border-top:1px solid var(--line)}.try:first-child{border-top:0;padding-top:4px}
+.try-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.try-h>span{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.src-tag{font:600 .7rem var(--f-body);padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted)}.src-tag.ok{background:var(--accent-soft);color:var(--accent)}
+.row.practice{background:var(--accent-soft);border-radius:10px;padding:10px 12px}.pr-item+.pr-item{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}.pr-item p{margin-top:3px;font-size:.86rem}.pr-h{font-size:.84rem}
 .src-seg{margin:2px 0 12px}.src-seg button{padding:12px 14px}.src-seg button b{font-size:.92rem}
 .src-hint{font-size:.84rem;color:var(--muted);line-height:1.6;margin:0 0 10px}.src-hint b{color:var(--ink);font-weight:600}
+.stage-box .chips{gap:6px}.stage-box .chip{font:600 .84rem var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);padding:5px 12px;line-height:1.4}
+.kw-line{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;align-items:center}.kw-line em{font-style:normal;font:600 .68rem var(--f-body);color:var(--accent);margin-right:2px}.kw-line i{font-style:normal;font-size:.74rem;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--ink)}
+textarea#kwNotes{min-height:180px;line-height:1.7;font-size:.88rem;margin-top:4px}
 textarea#aiQuestions{min-height:200px;line-height:1.7;font-size:.9rem;margin-top:10px}
 #import-out:empty,#script-out:empty{display:none}
 .seg button b{font-size:.86rem}.seg button small{font-size:.72rem;color:var(--muted)}
@@ -928,6 +928,10 @@ textarea#answer{min-height:120px;border-radius:12px}
               <textarea id="answerScripts" class="box" spellcheck="false" aria-label="질문별 답변 정리" placeholder="Q1. 첫 번째 질문의 답변 정리&#10;&#10;Q2. 두 번째 질문의 답변 정리&#10;&#10;Q3. -  (비워 둘 칸은 - 한 줄)"></textarea>
               <div class="script-help">
                 <div class="row-btns"><button class="btn small" id="btn-script-number" type="button">질문과 자동 연결</button></div><p class="mic-out" id="script-out" aria-live="polite"></p>
+                <details class="adv" id="kw-panel"><summary>키워드 메모 <span class="opt">선택 · 내가 정리한 키워드를 그대로 힌트로</span> <span class="auto-chip" id="kw-sync">자동</span></summary>
+                  <p class="hint" style="margin:8px 0">질문별로 정리한 키워드 메모를 통째로 붙여 넣으면, 답변 내용과 비교해 알맞은 질문에 자동으로 붙여요. 비워 두면 AI가 답변에서 핵심 키워드만 뽑아요 (AI가 없으면 자동 추출).</p>
+                  <textarea id="kwNotes" class="box" spellcheck="false" aria-label="키워드 메모" placeholder="1. 자기소개&#10;- 씨름부 하루 다큐 촬영&#10;- 화려한 연출 &lt; 사람 그대로&#10;- (영제) 인물 배치, 앵글&#10;&#10;1. 지원동기&#10;- 실무 중심 커리큘럼 / 기획·촬영·편집 체감"></textarea>
+                </details>
                 <details class="adv" id="script-map"><summary>짝 확인 (질문 ↔ 답변 정리)</summary><div class="plan-list" id="script-map-list"></div></details>
               </div>
             </details>
@@ -1385,8 +1389,9 @@ const S = { run: 0, phase: 'idle', pending: null, cfg: null, t0: 0, audio: null,
   questionSelection: { count: 10, balance: 'balanced', caps: null, basics: ['자기소개', '지원동기', '학업계획', '진로', '장단점', '인성', '마무리'] },
   planCache: null, aiCats: {}, aiCatsVer: 0, aiStatus: 'none', aiMsg: '' };
 
+const PKEY = 'interview-coach.practice.v5';
 const KEY = 'interview-coach.v2', HKEY = 'interview-coach.history.v2', V1KEY = 'interview-coach.v1', TKEY = 'interview-coach.training.v4', SKEY = 'interview-coach.sessions.v4';
-const FIELDS = ['school', 'phrasing', 'univ', 'dept', 'track', 'itype', 'memo', 'record', 'questions', 'answerScripts', 'aiQuestions', 'qSource', 'deptPick', 'followups', 'target', 'order', 'voice', 'rate', 'model', 'fastmodel', 'gen-n', 'serverUrl'];
+const FIELDS = ['school', 'phrasing', 'univ', 'dept', 'track', 'itype', 'memo', 'record', 'questions', 'answerScripts', 'kwNotes', 'aiQuestions', 'qSource', 'deptPick', 'followups', 'target', 'order', 'voice', 'rate', 'model', 'fastmodel', 'gen-n', 'serverUrl'];
 const CHECKS = ['autorec', 'opening', 'recordAudio', 'subtitles', 'remember'];
 const readJSON = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
 const writeJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
@@ -1397,7 +1402,7 @@ function save() {
   o.style = styleVal();
   o.apikey = o.remember ? $('#apikey').value : '';
   o.trainingStage = +($('input[name=trainingStage]:checked')?.value || 2);
-  o.hints = S.hints; o.recordAnalysis = S.recordAnalysis; o.aiCats = S.aiCats; o.excluded = S.excluded;
+  o.hints = S.hints; o.recordAnalysis = S.recordAnalysis; o.aiCats = S.aiCats; o.excluded = S.excluded; o.kwCache = S.kwCache;
   o.genCats = $$('#gen-cats input:checked').map(x => x.value);
   o.docs = { ...S.docs };
   o.questionSelection = { count: S.questionSelection.count, balance: S.questionSelection.balance, caps: getCaps(), basics: getBasicCatSelection() };
@@ -1484,6 +1489,31 @@ async function loadServerHistory() {
 }
 function trainingStore() { return readJSON(TKEY) || {}; }
 function saveTrainingStore(v) { writeJSON(TKEY, v); }
+/* 질문별 연습 기록 (암기 방지 훈련 · 약점 집중훈련) — 면접 리포트의 질문별 피드백에 함께 보여 줌 */
+const practiceKey = t => normText(String(t || '').replace(/\s*[(（][^()（）]{1,40}[)）]\s*$/, ''));
+function getPractice() { return readJSON(PKEY) || {}; }
+function practiceFor(text) { return getPractice()[practiceKey(text)] || []; }
+function recordPractice(ss) {
+  const store = getPractice(), add = (text, e) => { const k = practiceKey(text); if (!k) return; const list = (store[k] ||= []).filter(x => x.id !== e.id); list.push(e); store[k] = list.slice(-6); };
+  if (ss.kind === 'stage') {
+    const by = {};
+    (ss.results || []).forEach(r => (by[r.qText] ||= []).push(r));
+    Object.entries(by).forEach(([t, tries]) => {
+      const last = tries[tries.length - 1], sc = tries.map(x => x.evaluation?.score).filter(v => v != null);
+      add(t, { id: ss.histId + ':' + t.slice(0, 20), date: ss.startedAt, kind: 'stage', label: '암기 방지 훈련', score: sc.length ? sc[sc.length - 1] : null,
+        first: sc.length ? sc[0] : null, stage: last.nextStage, mastered: tries.some(x => x.mastered), feedback: last.evaluation?.feedback || '', ai: !!last.evaluation?.ai, tries: tries.length });
+    });
+  } else if (ss.kind === 'drill') {
+    (ss.results || []).forEach(r => add(r.q.text, { id: ss.histId + ':' + r.q.text.slice(0, 20), date: ss.startedAt, kind: 'drill', label: '약점 집중훈련 · ' + (WEAK[ss.weakKey]?.label || ''),
+      score: r.e2.score ?? null, first: r.e1.score ?? null, feedback: [r.e2.improved && '나아진 점: ' + r.e2.improved, r.e2.remaining && '남은 문제: ' + r.e2.remaining].filter(Boolean).join(' / ') || r.e1.feedback || '', ai: !!r.e2.ai }));
+  }
+  writeJSON(PKEY, store);
+}
+function practiceRowHtml(text, baseScore, since) {
+  const list = practiceFor(text).filter(e => !since || e.date >= since).slice(-2).reverse();
+  if (!list.length) return '';
+  return `<div class="row practice"><span class="label" style="color:var(--accent)">최근 연습 결과</span>${list.map(e => `<div class="pr-item"><span class="pr-h"><b>${esc(e.label)}</b> · ${new Date(e.date).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}${e.score != null ? ` · <span class="grade g-${band(e.score)}">${e.score}점</span>` : ''}${e.first != null && e.score != null && e.first !== e.score ? ` <span class="said">(첫 시도 ${e.first}점)</span>` : ''}${baseScore != null && e.score != null ? ' ' + deltaChip(e.score, baseScore) : ''}${e.kind === 'stage' ? ` · ${e.mastered ? '독립 답변 성공' : '다음 ' + e.stage + '단계'}` : ''}</span>${e.feedback ? `<p>${esc(e.feedback)}</p>` : ''}</div>`).join('')}</div>`;
+}
 function trainingKey(ss, q) {
   return [ss.cfg?.univ || '', ss.cfg?.dept || '', normText(q.planned || q.text || '')].join('|').slice(0, 500);   // 질문 문장 기준 (답변 문장이 아님)
 }
@@ -1523,6 +1553,7 @@ S.hints = saved.hints || {};
 S.recordAnalysis = saved.recordAnalysis || null;
 S.aiCats = saved.aiCats && typeof saved.aiCats === 'object' ? saved.aiCats : {};
 S.excluded = saved.excluded && typeof saved.excluded === 'object' ? saved.excluded : {}; S.exclVer = 0;
+S.kwCache = saved.kwCache && typeof saved.kwCache === 'object' ? saved.kwCache : {};
 if (saved.docs) S.docs = { ...S.docs, ...saved.docs };
 if (saved.questionSelection) S.questionSelection = { ...S.questionSelection, ...saved.questionSelection };
 
@@ -1638,30 +1669,177 @@ function scriptForText(text) {
   const q = parseQuestions().find(x => normText(x.text) === normText(text));
   return q ? q.answerScript : '';
 }
-function scriptSpecFromText(script) {
+/* ---------- 답변 정리 → 핵심 키워드 (문장마다 핵심 명사만 짧게) ---------- */
+const KW_STOP = new Set('저 제 저희 우리 나 내 그 이 저것 그것 이것 것 거 건 게 수 때 등 더 또 및 정말 가장 많이 바로 그때 이후 지금 다시 계속 모두 각자 같은 이런 그런 어떤 무엇 생각 부분 정도 과정 이유 때문 경우 자체 하나 두 가지 첫째 둘째 셋째 먼저 그래서 그리고 하지만 그러나 또한 특히 결국 이렇게 그렇게 어떻게 왜 위해 통해 대해 관련 동안 이번 당시 처음 마지막 늘 항상 조금 크게 매우 너무 아주 거의 자주 직접 함께 혼자 스스로 여러 다양한 모든 각 이미 아직 오히려 그냥 바탕 정도로 만큼 뿐 앞으로 안녕하십니까 감사합니다 지원자 지원자입니다'.split(' '));
+const KW_PARTICLE = /(으로부터|에서부터|이라는|라는|이라고|라고|에게서|으로서|로서|으로써|로써|에서는|에서도|에서|에게|께서|부터|까지|처럼|보다|이나|이며|이고|만큼|마다|조차|밖에|으로|이랑|랑|하고|과|와|을|를|은|는|이|가|에|의|로|도|만|께|나|요)$/;
+const KW_VERB = /(습니다|ㅂ니다|니다|었다|았다|했다|한다|된다|이다|있다|없다|싶다|겠다|하게|하고|하며|하면|하여|해서|해도|했고|했던|하던|하는|하기|할|한|함|합|해|했|되는|되어|되고|돼|됐|된|되|시키|있는|없는|있던|없던|싶은|싶어|같은|같이|보며|보고|보면|봤|본|보는|만든|만들|만드|느꼈|느끼|생겼|생기|됩니|입니|였|었|았|겠|면서|면서부터|려고|도록|지만|는데|은데|던|게|고|며|면|서|어|아|지|니|든|자)$/;
+const KW_ADV = /^(그대로|제대로|스스로|새로|따로|서로|실제로|주로|특히|오히려|아니라|아닌|아니|아니고|다만|이처럼|원래|최근|오랜만|뒤로|번째|그래도|덕분|덕분에|자연스럽게|구체적으로|직접적으로|체계적으로|적극적으로|꾸준히|열심히|가만히|충분히|무척|훨씬|정확히|조금씩|하나씩|모두에게)$/;
+function kwStem(w) {
+  w = String(w || '').replace(/^["'“”‘’(\[<]+|["'“”‘’)\]>,.!?…]+$/g, '');
+  if (!w || KW_ADV.test(w) || KW_STOP.has(w)) return '';
+  if (/^[A-Za-z][A-Za-z0-9+.#-]*$/.test(w)) return w;                        // DINFAC, IP, OTT
+  if (/\d/.test(w)) { let n = w; for (let k = 0; k < 2; k++) n = n.replace(/(회를|회가|회의|을|를|이|가|은|는|의|에|로|으로|도|만|이나|입니다|이에요)$/, ''); return n; }   // 160만, 120건
+  if (/^(저|제|저희|우리|나|내)(는|가|도|의|를|에게|희|가요)?$/.test(w)) return '';
+  if (/(혔|졌|켰|웠|렸|겼|쳤|녔|었|았|였|했|됐|왔|갔|봤|줬|냈|섰|컸|썼|겠|랐|났|렀|셨|펐)/.test(w.slice(1))) {          // 과거형 동사 → 한자어 어근만 살림
+    const hv = w.match(/^([가-힣]{2,})(했|됐|시켰)/); return hv ? hv[1] : '';
+  }
+  const hv = w.match(/^([가-힣]{2,})(하|해|한|할|함|합|되|된|돼|될|시키|시켜)/);   // 촬영하면서 → 촬영, 분석해 → 분석
+  if (hv) return /^(생각|말|일|위|대|통|관|잘|못|안|이해)$/.test(hv[1]) ? '' : hv[1];
+  if (/[이하되보주오가내지리키우르]는$/.test(w) || /(온|던|운|린|낸)$/.test(w) || /^(좋아|싫어|아니|많아|적어)/.test(w) || /(있는|없는|싶은|같은|좋은|많은|아닌|어떤|다른|새로운|위한|대한|통한|싶어|싶습)/.test(w)) return '';   // 꾸미는 말
+  let s = w;
+  s = s.replace(KW_PARTICLE, ''); s = s.replace(/(에서|에|으로|로|와|과|만)$/, '') || s;
+  if (/(인데|는데|지만|으며|이며|이고|이라|라서|니까|어서|아서|해서|도록|려고|면서|으면|다가)$/.test(s)) s = s.replace(/(인데|는데|지만|으며|이며|이고|이라|라서|니까|어서|아서|해서|도록|려고|면서|으면|다가)$/, '');
+  if (s.length < 2 || KW_STOP.has(s) || KW_ADV.test(s)) return '';
+  if (KW_VERB.test(s) || /(하|다)$/.test(s)) return '';
+  return s;
+}
+function localKeywords(script) {
+  const raw = String(script || '').replace(/\r/g, '');
+  const sentences = raw.split(/(?<=[.!?。！？])\s+|\n+/).map(x => x.trim()).filter(Boolean);
+  const used = new Set(), out = [];
+  sentences.forEach(sen => {
+    const quoted = [...sen.matchAll(/[‘'“"]([^’'”"]{2,20})[’'”"]/g)].map(m => m[1].trim());
+    const words = sen.replace(/[‘'“"][^’'”"]{2,20}[’'”"]/g, ' ').split(/\s+/).map(kwStem)
+      .filter(w => w && w.length >= 2 && !KW_STOP.has(w) && !/^[가-힣]$/.test(w));
+    const picks = [];
+    quoted.forEach(q => { if (!used.has(q)) picks.push(q); });
+    words.forEach(w => { if (!used.has(w) && !picks.includes(w) && picks.length < 4) picks.push(w); });
+    picks.forEach(p => used.add(p));
+    if (picks.length) out.push(picks.slice(0, 4).join(' '));
+  });
+  return out.slice(0, 7);
+}
+
+/* 키워드가 답변에 들어 있는지 — "씨름부 하루 다큐 촬영"처럼 여러 단어면 절반 이상 들어 있으면 말한 것으로 봄 */
+function kwHit(k, text) {
+  const nt = normText(text), toks = String(k).split(/[\s,·/→<>+~()]+/).map(kwStem).filter(Boolean);
+  if (!toks.length) return nt.includes(normText(k));
+  return toks.filter(t => nt.includes(normText(t).slice(0, Math.min(2, normText(t).length)))).length >= Math.ceil(toks.length / 2);
+}
+const kwHash = t => { const n = normText(t); let h = 0; for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) | 0; return 'k2' + (h >>> 0).toString(36) + n.length; };   // k2: 키워드 규칙을 바꾸면 접두어를 올려 다시 뽑게 함
+/* 질문별 키워드 메모 (선택) — "1. 자기소개 / - 씨름부 하루 다큐 촬영" 형식 */
+function parseKwNotes(raw) {
+  const blocks = []; let cur = null;
+  String(raw || '').replace(/\r/g, '').split('\n').forEach(l => {
+    const t = l.trim(); if (!t) return;
+    const b = t.match(/^[-•·*▪◦–]\s*(.+)$/);
+    if (b) { if (!cur) blocks.push(cur = { title: '', items: [] }); cur.items.push(b[1].trim()); return; }
+    const h = t.match(/^(?:Q?\s*\d{1,3}\s*[.)]\s*)?(.+)$/);
+    blocks.push(cur = { title: h[1].trim(), items: [] });
+  });
+  return blocks.filter(x => x.items.length);
+}
+let _kwNoteCache = { key: null, map: new Map() };
+function noteKeywords(script, qText) {
+  const raw = $('#kwNotes')?.value || '';
+  if (!raw.trim()) return null;
+  const key = raw + '\u0001' + ($('#questions')?.value || '') + '\u0001' + ($('#answerScripts')?.value || '');
+  if (_kwNoteCache.key !== key) _kwNoteCache = { key, map: new Map(), blocks: parseKwNotes(raw) };
+  const ck = normText(qText || '') + '|' + kwHash(script || '');
+  if (_kwNoteCache.map.has(ck)) return _kwNoteCache.map.get(ck);
+  const target = (qText || '') + ' ' + (script || ''), nt = normText(target);
+  const tag = deptTagOf(qText || '');
+  const toksOf = t => [...new Set(String(t).split(/[\s,·/→<>+~()“”"'‘’:]+/).map(kwStem).filter(Boolean))];
+  let best = null, bestScore = 0;
+  _kwNoteCache.blocks.forEach(b => {
+    const toks = toksOf(b.items.join(' ')), tt = toksOf(b.title);
+    if (!toks.length) return;
+    const hit = toks.filter(t => nt.includes(normText(t).slice(0, Math.min(3, normText(t).length)))).length / toks.length;
+    const th = tt.length ? tt.filter(t => normText(qText || '').includes(normText(t).slice(0, Math.min(3, normText(t).length)))).length / tt.length : 0;
+    const sc = hit * 0.75 + th * 0.35;
+    if (sc > bestScore) { bestScore = sc; best = b; }
+  });
+  let out = null;
+  if (best && bestScore >= 0.45) {
+    const items = [];
+    best.items.forEach(it => {
+      const dm = it.match(/^\(([가-힣]{2,6})\)\s*|\s*\(([가-힣]{2,6})\)\s*$/);
+      const dt = dm ? (dm[1] || dm[2]) : '';
+      if (dt && tag && !sameDeptTag(dt, tag)) return;                       // 다른 학과용 메모 줄은 뺌
+      it.replace(/^\([가-힣]{2,6}\)\s*|\s*\([가-힣]{2,6}\)\s*$/g, '').split(/\s+\/\s+|\s*\/\s*(?=[^\d])/).map(x => x.trim()).filter(Boolean).forEach(x => items.push(x));
+    });
+    if (items.length) out = { keywords: items.slice(0, 8), outline: items.slice(0, 5), src: 'note' };
+  }
+  _kwNoteCache.map.set(ck, out);
+  return out;
+}
+function scriptSpecFromText(script, qText) {
   const raw = String(script || '').trim();
-  if (!raw) return null;
-  // 사용자가 직접 정리한 키워드 형식을 최우선으로 사용합니다.
-  // 예: "- 씨름부 하루 다큐 촬영" / "• 조회수 160만"
-  const explicitKeywords = raw.split(/\r?\n/)
-    .map(line => line.trim()).filter(Boolean)
-    .filter(line => /^[-*•·▶▷]\s+/.test(line))
-    .map(line => line.replace(/^[-*•·▶▷]\s+/, '').trim())
-    .filter(line => line.length >= 2 && !/^(없음|-)$/i.test(line));
-  const clean = raw.replace(/\s+/g, ' ').trim();
-  const sentences = raw.split(/(?:[.!?。！？]|\n)+/).map(x => x.trim()).filter(Boolean);
-  const outline = sentences.slice(0, 5).map(x => x.length > 55 ? x.slice(0,55) + '…' : x);
-  const explicit = [...new Set(explicitKeywords)].slice(0, 20);
-  const words = clean.replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/)
-    .map(w => w.replace(/(입니다|합니다|했습니다|됩니다|있습니다|같습니다|라고|에서|으로|에게|부터|까지|이라|은|는|이|가|을|를|에|로|와|과|도|만|의|한|할|것|수)$/,''))
-    .filter(w => w.length >= 2 && !STOP.has(w));
-  const freq = {}; words.forEach(w => freq[w] = (freq[w] || 0) + 1);
-  const generated = Object.entries(freq).sort((a,b) => (b[1]-a[1]) || (b[0].length-a[0].length)).slice(0, 7).map(x => x[0]);
+  const note = noteKeywords(raw, qText);
+  if (!raw && !note) return null;
+  const sentences = raw.split(/(?<=[.!?。！？])\s+|\n+/).map(x => x.trim()).filter(Boolean);
+  const outline = sentences.slice(0, 5).map(x => x.length > 55 ? x.slice(0, 55) + '…' : x);
+  const hint = '문장을 외우지 말고 이 키워드 사이의 흐름만 기억하세요.';
+  if (note) return { ...note, outline: outline.length ? outline : note.outline, hint };
+  const ai = S.kwCache?.[kwHash(raw)];
+  const keywords = ai?.k?.length ? ai.k : localKeywords(raw);
   return {
-    keywords: explicit.length ? explicit : (generated.length ? generated : sentences.slice(0,3).map(x => x.split(/\s+/).slice(0,3).join(' '))),
+    keywords: keywords.length ? keywords : sentences.slice(0, 3).map(x => x.split(/\s+/).slice(0, 3).join(' ')),
     outline: outline.length ? outline : ['핵심 주장', '구체적인 경험', '배운 점과 연결'],
-    hint: '문장을 외우지 말고 이 키워드 사이의 흐름만 기억하세요.'
+    hint, src: ai?.k?.length ? 'ai' : 'auto'
   };
+}
+/* AI로 답변 정리에서 핵심 키워드 뽑기 — 답변이 바뀌면 그 답변만 다시 뽑고, 결과는 저장해 둠 */
+let _kwBusy = null, _kwTimer = 0;
+function scheduleAiKeywords() { clearTimeout(_kwTimer); _kwTimer = setTimeout(() => aiKeywords().catch(() => {}), 2500); }
+async function aiKeywords(scripts) {
+  if (!aiReady() || S.aiStatus === 'fail') return 0;
+  if (_kwBusy) { await _kwBusy; }
+  const list = (scripts || parseQuestions().map(q => q.answerScript)).map(t => String(t || '').trim()).filter(Boolean);
+  const need = [...new Set(list)].filter(t => !S.kwCache?.[kwHash(t)]);
+  if (!need.length) return 0;
+  let n = 0;
+  _kwBusy = (async () => {
+    const parts = []; for (let k = 0; k < need.length; k += 6) parts.push(need.slice(k, k + 6));
+    await runLimited(parts.map(part => async () => {
+      const prompt = `너는 면접 코치다. 지원자가 직접 정리한 면접 답변에서, 2단계 연습(키워드만 보고 답하기) 때 화면에 띄울 핵심 키워드를 뽑는다.
+목표: 키워드만 보고도 답변 흐름이 떠오르게 한다. 문장을 외우게 하지 않는다.
+규칙:
+- 답변에 실제로 나온 내용만 쓴다. 새 내용·해석·평가를 더하지 않는다.
+- 답변 흐름 순서대로 4~6개. 답변이 아주 짧으면 2~3개.
+- 각 키워드는 2~14자의 짧은 명사구. 조사·어미는 최대한 빼고, 서술어(~했습니다, ~입니다, ~다, ~함)로 끝내지 않는다.
+- 답변의 뼈대를 고른다: 결론(한 줄 주장) → 대표 경험·활동명 → 내가 한 행동 → 결과·숫자 → 배운 점·학과 연결.
+- 숫자·고유명사·작품명·활동명은 답변에 적힌 그대로 쓴다 (예: 조회수 160만, DINFAC, 씨름부의 하루).
+- 대비나 흐름은 기호로 짧게 쓸 수 있다: "A < B", "A → B".
+- "저는", "생각", "경험", "부분", "노력", "열심히"처럼 뜻이 약한 말만으로 된 키워드는 쓰지 않는다.
+- 같은 내용을 두 번 쓰지 않는다.
+예시 1)
+답변: 저는 특별할 것 없어 보이는 장면에서 이야기를 찾아내는 지원자입니다. 이렇게 생각하게 된 건 학교 씨름부의 하루를 촬영하면서부터입니다. 그 뒤로 화려한 연출보다 사람을 있는 그대로 보여주는 쪽에 마음이 갔고, 자연스러운 순간이 힘이 세다는 걸 배웠습니다.
+키워드: ["평범한 장면에서 이야기 찾기", "씨름부의 하루 다큐", "화려한 연출 < 사람 그대로", "자연스러운 순간의 힘"]
+예시 2)
+답변: 제 장점은 커뮤니케이션 능력입니다. 충돌이 생겨도 완만하게 풀려고 하고, 피드백은 최대한 수용합니다. 단점은 거절을 잘 못하는 것인데, 이를 고치기 위해 클라이언트와 매번 소통하는 연습을 하고 있습니다.
+키워드: ["장점: 커뮤니케이션", "충돌 완만하게 · 피드백 수용", "단점: 거절 못함", "클라이언트와 매번 소통 연습"]
+[답변 목록]
+${part.map((t, i) => `${i}: ${t.replace(/\s+/g, ' ').slice(0, 1600)}`).join('\n')}
+JSON만 출력: {"items":[{"i":번호,"keywords":["...","..."]}]}`;
+      try {
+        const j = parseJSON(await callClaude(prompt, { maxTokens: Math.min(4000, 260 * part.length + 400), temperature: 0 }));
+        (j.items || []).forEach(x => {
+          const i = idOf(x?.i), t = part[i]; if (t == null) return;
+          const ks = listOf(x.keywords).map(k => k.replace(/^["'\-•\s]+|["'\s.]+$/g, '').trim())
+            .filter(k => k.length >= 2 && k.length <= 30 && !/(습니다|입니다|니다|했다|이다|했음|함)[.!]?$/.test(k) && !/^(저는|생각|경험|부분|노력|열심히)$/.test(k))
+            .filter(k => { const nt = normText(t), toks = k.split(/[\s,·/→<>+~()]+/).map(kwStem).filter(Boolean); if (!toks.length) return true;
+              if (toks.some(tk => /[A-Za-z0-9]/.test(tk) && !nt.includes(normText(tk)))) return false;      // 숫자·영문은 답변에 그대로 있어야 함
+              return toks.filter(tk => nt.includes(normText(tk).slice(0, Math.min(2, normText(tk).length)))).length / toks.length >= 0.6; })   // 답변에 없는 말은 버림
+            .slice(0, 7);
+          if (ks.length) { S.kwCache[kwHash(t)] = { k: ks, at: Date.now() }; n++; }
+        });
+      } catch (e) { console.warn('aiKeywords', e); }
+    }), 3);
+    // 오래된 캐시 정리 (최근 200개)
+    const keys = Object.keys(S.kwCache); if (keys.length > 200) keys.sort((a, b) => (S.kwCache[a].at || 0) - (S.kwCache[b].at || 0)).slice(0, keys.length - 200).forEach(k => delete S.kwCache[k]);
+    if (n) { save(); if ($('#script-map')?.open) renderScriptMap(); }
+  })();
+  try { await _kwBusy; } finally { _kwBusy = null; }
+  return n;
+}
+/* 면접·훈련 시작 전에 필요한 질문의 키워드를 먼저 준비 (최대 몇 초만 기다림) */
+async function ensureKeywords(scripts, ms = 9000) {
+  if (!aiReady() || S.aiStatus === 'fail') return;
+  const need = scripts.map(t => String(t || '').trim()).filter(t => t && !S.kwCache?.[kwHash(t)]);
+  if (!need.length) return;
+  showToast('답변 정리에서 핵심 키워드를 뽑고 있어요…');
+  await Promise.race([aiKeywords(need), sleep(ms)]);
 }
 function syncScriptStatus() {
   const qs = parseQuestions(), scripts = parseAnswerScripts();
@@ -1670,12 +1848,16 @@ function syncScriptStatus() {
   const el = $('#script-sync');
   if (el) el.textContent = `${sn} / ${qs.filter(q => !q.dup).length}개 연결`;
   if (el && extra) el.textContent += ` · 남는 답변 정리 ${extra}개`;
+  const ks = $('#kw-sync');
+  if (ks) { const notes = $('#kwNotes').value.trim(); const n = notes ? qs.filter(q => !q.dup && noteKeywords(q.answerScript, q.text)).length : 0;
+    ks.textContent = notes ? `메모 ${n}개 질문에 연결` : (aiReady() && S.aiStatus === 'ok' ? 'AI가 뽑음' : '자동 추출'); }
   const box = $('#script-map');
   if (box && box.open) renderScriptMap();
 }
 function renderScriptMap() {
   const list = $('#script-map-list'); if (!list) return;
-  list.innerHTML = parseQuestions().map(q => `<div class="plan-item"><span class="num">Q${q.id}</span><span class="cat">${esc(q.cat || '공통')}</span><span class="qt"><b>${esc(q.text)}</b><br><span style="color:var(--muted)">${q.answerScript ? esc(q.answerScript.replace(/\s+/g, ' ').slice(0, 60)) + (q.answerScript.length > 60 ? '…' : '') : '— 답변 정리 없음'}</span></span></div>`).join('') || '<p class="sub" style="margin:0">질문이 없어요.</p>';
+  const SRCN = { note: '내 메모', ai: 'AI', auto: '자동' };
+  list.innerHTML = parseQuestions().map(q => { const sp = (q.answerScript || $('#kwNotes').value.trim()) ? scriptSpecFromText(q.answerScript, q.text) : null; return `<div class="plan-item"><span class="num">Q${q.id}</span><span class="cat">${esc(q.cat || '공통')}</span><span class="qt"><b>${esc(q.text)}</b><br><span style="color:var(--muted)">${q.answerScript ? esc(q.answerScript.replace(/\s+/g, ' ').slice(0, 60)) + (q.answerScript.length > 60 ? '…' : '') : '— 답변 정리 없음'}</span>${sp?.keywords?.length ? `<span class="kw-line"><em>${SRCN[sp.src] || ''} 키워드</em>${sp.keywords.slice(0, 7).map(k => `<i>${esc(k)}</i>`).join('')}</span>` : ''}</span></div>`; }).join('') || '<p class="sub" style="margin:0">질문이 없어요.</p>';
 }
 /* 질문 목록 파싱 — 같은 질문이 두 줄 이상 있으면 처음 것만 사용. id는 목록에서의 순서(Q번호)와 같음 */
 let _qCache = { raw: null, scripts: null, out: [] };
@@ -1830,11 +2012,12 @@ $('#btn-clear').onclick = () => {
 };
 
 /* 준비 화면 입력 처리 — 키를 누를 때마다 전체 저장·재계산하지 않고 잠깐 모아서 한 번에 처리 */
-let _setupTimer = 0, _lastQRaw = null, _lastSRaw = null, _bulkQ = null;
+let _setupTimer = 0, _lastQRaw = null, _lastSRaw = null, _bulkQ = null, _kwSeen = null;
 function scheduleSetupUpdate() {
   clearTimeout(_setupTimer);
   _setupTimer = setTimeout(() => {
     if (checkBulkImport()) return;
+    const kwRaw = $('#answerScripts').value; if (kwRaw !== _kwSeen) { _kwSeen = kwRaw; scheduleAiKeywords(); }
     const raw = $('#qSource').value + '|' + $('#dept').value + '|' + qBox().value;
     if (raw !== _lastQRaw) { _lastQRaw = raw; renderQuestionSelector(); scheduleAiClassify(); }   // 질문이 바뀌면 분류 목록 갱신 + AI 분류 예약
     else updateQuestionSelectorStatus();
@@ -2084,7 +2267,7 @@ function renderHistoryBox() {
   $('#hist-box').innerHTML = `<div class="tbl-wrap"><table class="hist"><thead><tr><th>날짜</th><th>종류</th><th class="num">점수</th><th>주요 약점</th><th></th></tr></thead><tbody>${h.map(e => {
     const d = new Date(e.date);
     const kind = e.kind === 'drill' ? `약점 · ${esc(e.label || '')}` : e.kind === 'stage' ? '암기 방지 훈련' : '모의면접';
-    const sc = e.kind === 'drill' ? `${e.before ?? '–'}→${e.after ?? '–'}` : e.kind === 'stage' ? `${e.after ?? 0}개 완료` : (e.overall ?? '–');
+    const sc = e.kind === 'drill' ? `${e.before ?? '–'}→${e.after ?? '–'}` : e.kind === 'stage' ? (e.score != null ? `${e.score}점 · ${e.after ?? 0}개 완료` : `${e.after ?? 0}개 완료`) : (e.overall ?? '–');
     return `<tr><td class="num" style="text-align:left">${d.getMonth() + 1}.${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}</td><td>${kind}</td><td class="num">${sc}</td><td>${esc((e.weak || []).slice(0, 2).map(w => w.label).join(', ') || '–')}</td><td><button class="btn small" type="button" data-open-session="${esc(e.id)}">열기</button></td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
@@ -2269,7 +2452,7 @@ $('#btn-testmic').onclick = () => {
 /* =====================================================================
    Claude API
    ===================================================================== */
-async function callClaude(prompt, { fast = false, maxTokens = 1024, retry = 1 } = {}) {
+async function callClaude(prompt, { fast = false, maxTokens = 1024, retry = 1, temperature = null, grow = 1 } = {}) {
   const key = $('#apikey').value.trim();
   const model = (fast ? $('#fastmodel') : $('#model')).value.trim();
   let res, data;
@@ -2277,25 +2460,45 @@ async function callClaude(prompt, { fast = false, maxTokens = 1024, retry = 1 } 
     res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }], ...(temperature != null ? { temperature } : {}) })
     });
     data = await res.json().catch(() => null);
   } catch (e) {
-    if (retry > 0) { await sleep(1200); return callClaude(prompt, { fast, maxTokens, retry: retry - 1 }); }
+    if (retry > 0) { await sleep(1200); return callClaude(prompt, { fast, maxTokens, retry: retry - 1, temperature, grow }); }
     throw new Error('인터넷 연결을 확인해 주세요. (' + e.message + ')');
   }
   if (!res.ok) {
-    if (retry > 0 && (res.status === 429 || res.status >= 500)) { await sleep(res.status === 429 ? 2500 : 1200); return callClaude(prompt, { fast, maxTokens, retry: retry - 1 }); }
+    if (temperature != null && res.status === 400 && /temperature/i.test(data?.error?.message || '')) return callClaude(prompt, { fast, maxTokens, retry, temperature: null, grow });   // 이 모델이 temperature를 받지 않으면 빼고 다시
+    if (retry > 0 && (res.status === 429 || res.status >= 500)) { await sleep(res.status === 429 ? 2500 : 1200); return callClaude(prompt, { fast, maxTokens, retry: retry - 1, temperature, grow }); }
     const msg = data?.error?.message || ('HTTP ' + res.status);
     const hint = res.status === 401 ? 'API 키가 올바르지 않아요.' : res.status === 404 ? '모델 이름을 확인해 주세요 (' + model + ').' : res.status === 429 ? '요청이 많거나 크레딧이 부족해요.' : res.status >= 500 ? 'API 서버가 혼잡해요. 잠시 뒤 다시 시도해 주세요.' : '';
     throw new Error((hint ? hint + ' ' : '') + msg);
   }
   const text = (data?.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-  if (data?.stop_reason === 'max_tokens') { const e = new Error('응답이 길어서 중간에 잘렸어요.'); e.truncated = true; throw e; }
+  if (data?.stop_reason === 'max_tokens') {
+    // 모델이 생각하는 데 토큰을 쓰거나 글이 길어 잘린 경우: 한도를 늘려 한 번 더 받음
+    if (grow > 0 && maxTokens < 16000) return callClaude(prompt, { fast, maxTokens: Math.min(16000, Math.max(maxTokens * 2, 4000)), retry, temperature, grow: grow - 1 });
+    const e = new Error('응답이 길어서 중간에 잘렸어요.'); e.truncated = true; throw e;
+  }
   if (!text.trim()) throw new Error('빈 응답을 받았어요.');
   return text;
 }
 const idOf = v => { const n = parseInt(String(v ?? '').replace(/[^\d]/g, ''), 10); return Number.isFinite(n) ? n : null; };
+/* "72점", "72.5", "72/100" 같은 점수 → 0~100 정수 (없으면 null) */
+function numScore(v) {
+  if (v == null || v === '' || typeof v === 'boolean') return null;
+  let n = typeof v === 'number' ? v : NaN;
+  if (typeof v === 'string') { const m = v.match(/-?\d+(?:\.\d+)?/); n = m ? parseFloat(m[0]) : NaN; }
+  return Number.isFinite(n) ? clamp(Math.round(n), 0, 100) : null;
+}
+/* "true", "예", "통과" 같은 값 → 참/거짓 */
+function boolOf(v) {
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'number') return v > 0;
+  const t = String(v ?? '').trim().toLowerCase();
+  return /^(true|yes|y|1|예|네|통과|가능|맞음|o)$/.test(t);
+}
+const listOf = v => Array.isArray(v) ? v.map(String).filter(Boolean) : String(v ?? '').split(/[,·\n]/).map(x => x.trim()).filter(Boolean);
 function parseJSON(t) {
   let raw = String(t || '').trim();
   const m = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -2319,12 +2522,20 @@ const REPORT_JSON_SCHEMA = {
   }
 };
 const STAGE_JSON_SCHEMA = {
-  type:'object', required:['advance','core_preserved','logic_ok','natural','script_like','feedback','missing','hint'],
-  properties:{advance:{type:'boolean'},core_preserved:{type:'boolean'},logic_ok:{type:'boolean'},natural:{type:'boolean'},
+  type:'object', required:['advance','feedback'],
+  properties:{score:{type:['integer','null']},advance:{type:'boolean'},core_preserved:{type:'boolean'},logic_ok:{type:'boolean'},natural:{type:'boolean'},
     script_like:{type:'boolean'},feedback:{type:'string'},missing:{type:'array'},hint:{type:'string'}}
 };
 function assertSchemaBasics(obj, schema) {
   if (!obj || typeof obj !== 'object') throw new Error('JSON 객체가 아닙니다.');
+  for (const [k, p] of Object.entries(schema.properties || {})) {         // 모델이 "72점", "true"처럼 보내도 받아들임
+    if (!(k in obj) || obj[k] === null) continue;
+    const types = Array.isArray(p.type) ? p.type : [p.type];
+    if (types.includes('integer') && !Number.isInteger(obj[k])) { const n = numScore(obj[k]); if (n != null) obj[k] = n; }
+    if (types.includes('boolean') && typeof obj[k] !== 'boolean') obj[k] = boolOf(obj[k]);
+    if (types.includes('array') && !Array.isArray(obj[k])) obj[k] = listOf(obj[k]);
+    if (types.includes('string') && typeof obj[k] !== 'string') obj[k] = String(obj[k]);
+  }
   for (const k of (schema.required || [])) if (!(k in obj)) throw new Error(`필수 필드 누락: ${k}`);
   for (const [k,p] of Object.entries(schema.properties || {})) {
     if (!(k in obj)) continue;
@@ -2370,7 +2581,7 @@ async function requestStructured(prompt, validator, opts = {}) {
   } catch (first) {
     try {
       const repair = `아래 AI 응답을 원래 의미를 바꾸지 않고 유효한 JSON으로만 복구하세요. 누락된 값은 빈 문자열, 배열은 빈 배열, 수치화할 수 없는 값은 null로 둡니다. 설명 없이 JSON만 출력하세요.\n\n${raw.slice(0,20000)}`;
-      const j = validator(parseJSON(await callClaude(repair, { fast: true, maxTokens: Math.min(opts.maxTokens || 3000, 6000) })));
+      const j = validator(parseJSON(await callClaude(repair, { fast: true, maxTokens: Math.min(Math.max(opts.maxTokens || 3000, 3000), 8000), temperature: 0 })));
       return j;
     } catch (second) {
       throw new Error(`AI JSON 검증 실패: ${first.message}`);
@@ -2495,7 +2706,7 @@ $('#btn-cat-write').onclick = () => {
 };
 /* AI 자동 분류 — 질문을 붙여 넣으면 잠시 뒤 백그라운드에서 실행. 목록 글은 바꾸지 않고 결과만 기억함 */
 let _aiCatTimer = 0, _aiCatBusy = false;
-function scheduleAiClassify() { clearTimeout(_aiCatTimer); _aiCatTimer = setTimeout(() => aiClassify(false), 1800); }
+function scheduleAiClassify() { clearTimeout(_aiCatTimer); _aiCatTimer = setTimeout(() => aiClassify(false), 1800); scheduleAiKeywords(); }
 async function aiClassify(force) {
   if (_aiCatBusy || !aiReady() || (!force && S.aiStatus !== 'ok')) return -1;
   const raw0 = qBox().value;
@@ -2901,7 +3112,6 @@ function showView(v) {
 function setCoach(state) {
   const a = $('#avatar');
   a.classList.toggle('speaking', state === 'speaking');
-  a.classList.toggle('listening', state === 'listening');
   a.classList.toggle('thinking', state === 'thinking');
   $('#coach-state').textContent = ({ speaking: '말하는 중', thinking: '생각하는 중', listening: '듣는 중', idle: '면접관' }[state] || '면접관');
 }
@@ -3055,7 +3265,7 @@ async function finishSession(early = false) {
   $('#rec-badge').hidden = true;
   showView('report');
   if (early) speak('수고하셨습니다. 여기까지 하겠습니다.');
-  if (S.session.kind === 'interview') generateReport(); else if (S.session.kind === 'drill') finishDrill(); else finishStageSession();
+  if (S.session.kind === 'interview') generateReport(); else if (S.session.kind === 'drill') finishDrill().catch(e => console.warn(e)); else finishStageSession().catch(e => console.warn(e));
   S.finishing = false;
 }
 
@@ -3198,14 +3408,14 @@ JSON만: {"reaction":"...","rephrased":"..."}`;
   } catch { return fallback; }
 }
 function stageGuideHtml(stage, q) {
-  const spec = q?.training || scriptSpecFromText(q?.answerScript || '');
+  const spec = q?.training || scriptSpecFromText(q?.answerScript || '', q?.text || q?.planned);
   if (stage === 3) return '<div class="stage-rule">3단계 · 무힌트 — 질문만 보고 실제 면접처럼 답하세요.</div>';
   if (!spec || (!spec.keywords?.length && !spec.outline?.length)) return '';
   if (stage === 1) return `<div class="stage-grid">
     <div class="stage-box"><span class="label">답변 개요</span><ol class="stage-outline">${spec.outline.slice(0,5).map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>
-    <div class="stage-box"><span class="label">핵심 키워드</span><div class="chips">${spec.keywords.map(h=>`<span class="chip">${esc(h)}</span>`).join('')}</div></div>
+    <div class="stage-box"><span class="label">핵심 키워드</span><div class="chips">${spec.keywords.slice(0,7).map(h=>`<span class="chip">${esc(h)}</span>`).join('')}</div></div>
   </div>`;
-  return `<div class="stage-box"><span class="label">핵심 키워드</span><div class="chips">${spec.keywords.map(h=>`<span class="chip">${esc(h)}</span>`).join('')}</div></div>`;
+  return `<div class="stage-box"><span class="label">핵심 키워드</span><div class="chips">${spec.keywords.slice(0,7).map(h=>`<span class="chip">${esc(h)}</span>`).join('')}</div></div>`;
 }
 
 
@@ -3566,9 +3776,9 @@ function validateOverview(j) {
   const cats = (j.categories || []).map((c, i) => ({ c, name: byName.get(String(c?.name || '').replace(/\s/g, '')) || null }));
   j.categories = CONTENT_CATS.map((n, i) => {
     const hit = cats.find(x => x.name === n)?.c || (cats.length === CONTENT_CATS.length ? cats[i].c : null);
-    return { name: n, score: hit && Number.isFinite(+hit.score) && hit.score !== null ? clamp(Math.round(+hit.score), 0, 100) : null, comment: String(hit?.comment || '') };
+    return { name: n, score: hit ? numScore(hit.score) : null, comment: String(hit?.comment || '') };
   });
-  j.overall_content = Number.isFinite(+j.overall_content) && j.overall_content !== null ? clamp(Math.round(+j.overall_content), 0, 100) : null;
+  j.overall_content = numScore(j.overall_content);
   j.summary = String(j.summary || '');
   j.priorities = Array.isArray(j.priorities) ? j.priorities.slice(0, 3).map(p => ({ title: String(p?.title || ''), detail: String(p?.detail || ''), how: String(p?.how || '') })) : [];
   j.strengths = Array.isArray(j.strengths) ? j.strengths.slice(0, 3).map(String) : [];
@@ -3584,8 +3794,26 @@ ${a.planned && a.kind === 'main' && !normText(a.say).includes(normText(a.planned
 const REPORT_RULES = `- 입학 면접관 관점에서 냉정하고 구체적으로. 칭찬만 늘어놓지 말 것.
 - 질문 의도 파악, 두괄식 여부, 근거·사례, 본인 역할의 명확성, 진정성(외운 일반론인지), 지원 학과와의 연결, 꼬리질문에 일관되게 대응했는지 본다.
 - 답변은 음성 인식 결과라 오타·띄어쓰기 오류가 있을 수 있으니 그 자체는 감점하지 않는다.
+- 점수 기준 (같은 수준의 답변에는 언제나 같은 점수를 준다):
+  90~100: 질문에 바로 답하고, 구체적 경험·본인 역할·결과·배운 점·학과 연결이 모두 있으며 군더더기가 없다. 실제 면접에서 그대로 써도 되는 수준.
+  80~89: 핵심 구조는 갖췄고 사소한 보완 한 가지만 남았다.
+  70~79: 핵심은 있으나 근거·본인 역할·학과 연결 중 하나가 약하다.
+  60~69: 주장 위주이거나 추상적이고, 근거가 부족하다.
+  0~59: 질문 의도를 벗어났거나 너무 짧거나 답하지 못했다.
+- 답변 길이·말투가 아니라 위 기준의 충족 여부로만 점수를 정한다. 기준을 다 채운 답변에 사소한 표현 취향으로 감점하지 않는다.
 - 모든 문장은 한국어, 간결하게.`;
-function overviewPrompt(ss) {
+/* 같은 질문의 지난 평가 — 지난번 개선 방향을 반영했는지 보고, 같은 지적을 반복하거나 새 트집을 잡지 않게 함 */
+function prevEvalFor(text, before) {
+  const k = practiceKey(text); if (!k) return null;
+  const all = Object.values(readJSON(SKEY) || {}).filter(x => x && x.kind === 'interview' && x.startedAt < before).sort((a, b) => b.startedAt - a.startedAt);
+  for (const ss of all) {
+    const a = (ss.answers || []).find(x => x.kind === 'main' && practiceKey(x.planned || x.say) === k);
+    const fb = a && ss.fbMap?.[a.id];
+    if (fb && numScore(fb.score) != null) return { score: numScore(fb.score), improve: fb.improve || '', direction: fb.direction || '', date: ss.startedAt };
+  }
+  return null;
+}
+function overviewPrompt(ss, compact = false) {
   const list = scoredAnswers(ss), D = ss.delivery;
   const breath = list.filter(a => a.m.hasAudio);
   const bLine = breath.length ? `평균 발화 구간 ${r1(avg(breath.map(a => a.m.avgRun)))}초, 최장 연속 발화 ${r1(Math.max(...breath.map(a => a.m.maxRun)))}초, 분당 쉼 ${r1(avg(breath.map(a => a.m.pausesPerMin)))}회, 발화 비율 ${Math.round(avg(breath.map(a => a.m.speechRatio)) * 100)}%, 목소리 작아진 답변 ${D?.drops || 0}개` : '녹음 측정값 없음';
@@ -3596,30 +3824,40 @@ ${profileCtx(ss.cfg)}
 [호흡 관련 측정값] ${bLine}
 
 [질문과 답변 (길면 앞부분만)]
-${qaBlock(list, false)}
+${compact ? list.map(a => `#${a.id} ${a.say}\n지원자: ${a.skipped ? '(답변 없음)' : a.text.slice(0, 220)}`).join('\n') : qaBlock(list, false)}
 
 평가 원칙:
 ${REPORT_RULES}
 - 호흡은 직접 측정할 수 없으므로 breath_estimate는 위 측정값을 근거로 한 추정임을 전제로 쓴다.
 - 꼬리질문·재질문이 하나도 없었다면 "꼬리질문 대응력" score는 null.
 - "자연스러운 표현/암기성"은 자신의 경험·생각을 자연스럽게 재구성하는지 본다. 같은 표현이 반복되거나 지나치게 준비된 문장처럼 들릴 때만 낮게 평가한다.
+- 모든 comment·detail은 한 문장으로 짧게 쓴다. 전체 출력은 짧을수록 좋다.
 
 아래 JSON만 출력하라 (설명·코드블록 없이):
 {"overall_content":0~100 정수,"summary":"총평 2~3문장","categories":[${CONTENT_CATS.map(c => `{"name":"${c}","score":정수 또는 null,"comment":"한 문장"}`).join(',')}],"priorities":[{"title":"우선 보완할 점","detail":"무엇이 문제인지 1~2문장, 어느 답변에서 드러났는지","how":"바로 할 수 있는 연습법 1문장"}] 정확히 3개 중요한 순서,"strengths":["잘한 점 한 문장"] 2~3개,"breath_estimate":{"level":"안정|보통|불안정","comment":"측정값 근거 추정 1~2문장"}}`;
 }
 function answersPrompt(ss, batch) {
+  const prev = batch.map(a => a.kind === 'main' ? [a.id, prevEvalFor(a.planned || a.say, ss.startedAt)] : null).filter(x => x && x[1]);
   return `너는 입시 면접 코치다. 모의면접 답변 일부를 하나씩 평가한다.
 ${profileCtx(ss.cfg)}
 
 [평가할 답변 ${batch.length}개]
 ${qaBlock(batch, true)}
-
+${prev.length ? `
+[같은 질문의 지난 평가 — 참고용]
+${prev.map(([id, p]) => `#${id} 지난 점수 ${p.score}점 / 지난 개선할 점: ${p.improve || '-'} / 지난 개선 방향: ${p.direction || '-'}`).join('\n')}
+- 지난 개선 방향을 이번 답변에서 반영했다면 그만큼 점수에 반영하고 good에 짧게 인정한다.
+- 이미 해결된 문제를 다시 지적하지 않는다. 반영했는데도 남은 문제가 있을 때만 그것 하나를 짚는다.
+- 지난번 지적과 다른 새 기준을 만들어 답변을 다시 고치게 하지 않는다. 점수는 위 점수 기준으로만 정한다.
+` : ''}
 평가 원칙:
 ${REPORT_RULES}
 - problems의 quote는 반드시 해당 답변 텍스트에서 그대로 옮긴 5~25자 구절 (찾을 수 있게 정확히). 문제가 없으면 빈 배열.
 - problems의 type은 vague(추상적 표현), evidence(근거 부족), role(본인 역할 불분명), late(핵심이 늦게 나옴), long(불필요하게 긴 문장), offtopic(질문 의도 벗어남), dept(학과 연결성 부족), sincerity(진정성·자기이해 부족) 중 하나.
 - example은 지원자가 실제로 말한 경험과 내용만 재구성한 2~4문장 예시다. ${NO_FAB}
 - 건너뛴 답변은 problems 없이, direction에 답변 뼈대(구조)를 제시한다.
+- 점수가 85 이상이면 improve·direction은 꼭 필요한 한 가지만 짧게 쓰거나 빈 문자열로 두고, example은 빈 문자열로 둔다. 잘 된 답변을 다시 쓰게 하지 않는다.
+- example은 점수가 75 미만일 때만 쓴다.
 - 위 답변 ${batch.length}개 모두에 대해 쓰고, id는 # 뒤의 숫자만 정수로 쓴다.
 
 아래 JSON만 출력하라 (설명·코드블록 없이):
@@ -3627,7 +3865,7 @@ ${REPORT_RULES}
 }
 function normFeedback(x, a) {
   return {
-    id: a.id, score: x.score != null && Number.isFinite(+x.score) ? clamp(Math.round(+x.score), 0, 100) : null,
+    id: a.id, score: numScore(x.score),
     verdict: String(x.verdict || ''), good: String(x.good || ''), improve: String(x.improve || ''),
     problems: (Array.isArray(x.problems) ? x.problems : []).filter(p => p && p.quote).slice(0, 5).map(p => ({ quote: String(p.quote), type: String(p.type || 'vague'), comment: String(p.comment || '') })),
     direction: String(x.direction || ''), example: String(x.example || '')
@@ -3635,7 +3873,7 @@ function normFeedback(x, a) {
 }
 async function feedbackBatch(ss, batch, depth = 0) {
   try {
-    const j = parseJSON(await callClaude(answersPrompt(ss, batch), { maxTokens: Math.min(12000, 1400 * batch.length + 600) }));
+    const j = parseJSON(await callClaude(answersPrompt(ss, batch), { maxTokens: Math.min(12000, 1400 * batch.length + 600), temperature: 0 }));
     const items = Array.isArray(j) ? j : (j.answers || j.questions || []);
     const byId = {};
     items.forEach(x => { const id = idOf(x?.id); if (id != null) byId[id] = x; });
@@ -3662,8 +3900,11 @@ async function feedbackBatch(ss, batch, depth = 0) {
   }
 }
 async function overviewCall(ss) {
-  try { ss.overview = await requestStructured(overviewPrompt(ss), validateOverview, { maxTokens: 3500 }); ss.overviewError = ''; }
-  catch (e) { ss.overview = null; ss.overviewError = e.message; }
+  try { ss.overview = await requestStructured(overviewPrompt(ss), validateOverview, { maxTokens: 6000, temperature: 0 }); ss.overviewError = ''; }
+  catch (e) {
+    try { ss.overview = await requestStructured(overviewPrompt(ss, true), validateOverview, { maxTokens: 8000, temperature: 0 }); ss.overviewError = ''; }   // 답변을 짧게 줄인 간단 버전
+    catch (e2) { ss.overview = null; ss.overviewError = e2.message || e.message; }
+  }
 }
 async function runLimited(tasks, n) {
   let i = 0;
@@ -3702,7 +3943,7 @@ function finalizeReport(ss) {
   else {
     ss.report = { ...(ss.overview || { ...fallback, answers: [] }), answers: fb };
     const missing = scoredAnswers(ss).filter(a => !ss.fbMap?.[a.id]).length;
-    if (!ss.overview) ss.reportError = `총평을 받지 못했어요 (${ss.overviewError}). 답변별 피드백은 아래에 있어요.`;
+    if (!ss.overview) ss.reportError = `총평과 항목별 점수를 받지 못했어요 (${ss.overviewError}). 아래 "총평 다시 받기"를 눌러 주세요. 답변별 피드백은 아래에 있어요.`;
     else if (missing) ss.reportError = `답변 ${missing}개의 피드백을 받지 못했어요${ss.fbError ? ' (' + ss.fbError + ')' : ''}. 해당 답변에서 "피드백 다시 받기"를 눌러 주세요.`;
   }
   buildIssues(ss);
@@ -3925,22 +4166,25 @@ function renderInterviewReport(ss) {
   }
   scored.forEach((a, idx) => {
     const ra = raMap[a.id];
-    const s = ra ? Math.round(+ra.score || 0) : null;
+    const s = ra ? numScore(ra.score) : null;
     const label = a.kind === 'main' ? `Q${qIndex(ss, a)}` : `Q${qIndex(ss, a)} ${KIND_LABEL[a.kind]}`;
     const chips = a.skipped ? '<span class="chip warn">건너뜀</span>' :
       `<span class="chip ${a.sec > a.target * 1.3 ? 'warn' : ''}">${fmt(a.sec)}</span><span class="chip">${a.m.spm || '–'} 음절/분</span><span class="chip ${a.m.fillerN >= 3 ? 'warn' : ''}">습관어 ${a.m.fillerN}</span><span class="chip ${a.m.longSil ? 'warn' : ''}">긴 침묵 ${a.m.longSil}</span>${a.m.delay != null ? `<span class="chip ${a.m.delay > 3 ? 'warn' : ''}">첫마디 ${r1(a.m.delay)}초</span>` : ''}`;
     const myIssues = ss.issues.filter(i => i.ansId === a.id);
+    const lastP = a.kind === 'main' ? practiceFor(a.planned || a.say).filter(e => e.date >= ss.startedAt).pop() : null;
     P.fb += `<details class="qitem"${idx === 0 ? ' open' : ''}>
-      <summary><span class="qs g-${band(s)}">${s ?? '–'}</span><span class="qt"><b>${a.kind !== 'main' ? '↳ ' : ''}${esc(a.say)}</b><span>${esc(label)}${a.cat ? ' · ' + esc(a.cat) : ''}${ra?.verdict ? ' · ' + esc(ra.verdict) : ''}</span></span><span class="chev" aria-hidden="true">›</span></summary>
+      <summary><span class="qs g-${band(s)}">${s ?? '–'}</span><span class="qt"><b>${a.kind !== 'main' ? '↳ ' : ''}${esc(a.say)}</b><span>${esc(label)}${a.cat ? ' · ' + esc(a.cat) : ''}${ra?.verdict ? ' · ' + esc(ra.verdict) : ''}${lastP?.score != null ? ` · 연습 후 ${lastP.score}점` : ''}</span></span><span class="chev" aria-hidden="true">›</span></summary>
       <div class="qbody">
         <div class="chips">${hasAudio && !a.skipped ? tchip(a.tStart, a.tEnd, true) : ''}${chips}</div>
         ${a.planned && a.kind === 'main' && a.planned !== a.say ? `<p class="said">준비한 질문: ${esc(a.planned)}</p>` : ''}
         <div class="row"><span class="label">내가 한 말 (받아쓰기)</span><p class="quote">${renderTranscript(a, ra)}</p></div>
         ${ra?.good ? `<div class="row"><span class="label" style="color:var(--good)">잘한 점</span><p>${esc(ra.good)}</p></div>` : ''}
         ${!ra && ss.cfg.ai && !ss.reportFallback ? `<div class="notice warn fb-miss"><span>이 답변의 AI 피드백을 받지 못했어요.</span><button class="btn small" type="button" data-refb="${a.id}">피드백 다시 받기</button></div>` : ''}
-        ${ra?.improve ? `<div class="row"><span class="label" style="color:var(--warn)">개선할 점</span><p>${esc(ra.improve)}</p></div>` : ''}
+        ${ra?.improve ? `<div class="row"><span class="label" style="color:var(--warn)">개선할 점</span><p>${esc(ra.improve)}</p></div>` : (ra && s != null && s >= 85 ? `<div class="row"><span class="label" style="color:var(--good)">이대로 유지</span><p>지금 답변 구조를 그대로 유지해도 좋아요. 외우지 말고 키워드로 말하는 연습만 이어 가세요.</p></div>` : '')}
         ${myIssues.length ? `<div class="row"><span class="label" style="color:var(--rec)">실제 발화 중 문제가 된 부분</span><ul class="plist">${myIssues.map(i => `<li>${tchip(i.t, i.t1, hasAudio)}<span>${esc(i.text)}</span></li>`).join('')}</ul></div>` : ''}
         ${ra?.direction || ra?.example ? `<div class="row"><span class="label" style="color:var(--accent)">개선 방향</span>${ra.direction ? `<p>${esc(ra.direction)}</p>` : ''}${ra.example ? `<p class="better">${esc(ra.example)}</p><p class="said">내가 말한 내용만으로 다시 구성한 예시예요. [ ] 칸은 내 실제 경험으로 채워 주세요.</p>` : ''}</div>` : ''}
+        ${a.kind === 'main' ? (() => { const pe = prevEvalFor(a.planned || a.say, ss.startedAt); return pe && s != null ? `<p class="said">지난 면접 ${pe.score}점 → 이번 ${s}점 ${deltaChip(s, pe.score)}</p>` : ''; })() : ''}
+        ${a.kind === 'main' ? practiceRowHtml(a.planned || a.say, s, ss.startedAt) : ''}
       </div></details>`;
   });
   P.fb += `</div></section>`;
@@ -3970,6 +4214,7 @@ function renderInterviewReport(ss) {
     '<button class="btn" type="button" id="btn-copy">텍스트로 복사</button>',
     ss.cfg.ai && !ss.reportFallback && scored.some(a => !ss.fbMap?.[a.id]) ? '<button class="btn" type="button" id="btn-refb-all">빠진 피드백 다시 받기</button>' : '',
     (ss.reportError && ss.reportFallback) || (ss.reportFallback && aiReady()) ? '<button class="btn" type="button" id="btn-regen">AI 리포트 다시 생성</button>' : '',
+    ss.cfg.ai && !ss.reportFallback && !ss.overview ? '<button class="btn primary" type="button" id="btn-reoverview">총평 다시 받기</button>' : '',
     '<button class="btn ghost" type="button" id="btn-home">준비 화면으로</button>'
   ]);
 }
@@ -3985,7 +4230,7 @@ function lowQuestions(ss) {
   const set = new Map();
   scoredAnswers(ss).forEach(a => {
     const ra = raMap[a.id];
-    const bad = a.skipped || (ra && +ra.score < 70) || (!ss.report && (a.m.keys.size >= 2 || a.m.issues.some(i => i.key === 'short')));
+    const bad = a.skipped || (ra && numScore(ra.score) != null && numScore(ra.score) < 70) || (!ss.report && (a.m.keys.size >= 2 || a.m.issues.some(i => i.key === 'short')));
     if (bad && a.planned) set.set(a.planned, { text: a.planned, cat: a.cat });
   });
   return [...set.values()];
@@ -4083,6 +4328,7 @@ document.addEventListener('click', e => {
   if (id === 'btn-save') saveReportHtml();
   if (id === 'btn-copy') copyReport(e.target);
   if (id === 'btn-regen') { S.session.cfg.ai = aiReady(); generateReport(); }
+  if (id === 'btn-reoverview') { const ss = S.session; showLoading('총평을 다시 받고 있어요', '항목별 점수와 우선 보완점을 정리하고 있어요.'); overviewCall(ss).then(() => finalizeReport(ss)); }
   if (id === 'btn-refb-all') { const b = e.target.closest('button'); b.disabled = true; b.innerHTML = '<span class="inline-spin"></span> 받는 중'; refetchFeedback(S.session, scoredAnswers(S.session).filter(a => !S.session.fbMap?.[a.id]).map(a => a.id)); }
   if (id === 'btn-home') { stopSpeaking(); renderHistoryBox(); showView('setup'); }
   if (id === 'btn-back-report' && S.lastInterview) { S.session = S.lastInterview; showView('report'); renderInterviewReport(S.lastInterview); }
@@ -4146,6 +4392,7 @@ async function saveReportHtml() {
 }
 function reportText(ss) {
   if (ss.kind === 'drill') return drillText(ss);
+  if (ss.kind === 'stage') return `[암기 방지 훈련] ${new Date(ss.startedAt).toLocaleString('ko-KR')} · 평균 ${ss.avgScore ?? '–'}점\n` + (ss.results || []).map(r => `\nQ. ${r.qText} (${r.stage}단계${r.evaluation?.score != null ? ' · ' + r.evaluation.score + '점' : ''})\nA. ${r.answer || '(답변 없음)'}\n피드백: ${r.evaluation?.feedback || '-'}`).join('\n');
   const R = ss.report, D = ss.delivery;
   let t = `[입시 면접 연습 리포트] ${new Date(ss.startedAt).toLocaleString('ko-KR')} · ${[ss.cfg.univ, ss.cfg.dept].filter(Boolean).join(' ')}\n종합 ${ss.overall ?? '–'}/100 (내용 ${ss.contentScore ?? '–'} · 말하기 ${ss.deliveryScore ?? '–'})\n`;
   if (R) t += R.summary + '\n';
@@ -4174,14 +4421,14 @@ async function copyReport(btn) {
    V4 암기 방지 훈련 · 1 → 2 → 3
    ===================================================================== */
 function fallbackTrainingSpec(a) {
-  const fromScript = scriptSpecFromText(a?.answerScript || '');
+  const fromScript = scriptSpecFromText(a?.answerScript || '', a?.planned || a?.text);
   if (fromScript) return fromScript;
   return null;
 }
 function buildTrainingSpecs(ss) {
   const map = {};
   ss.answers.filter(a => a.kind === 'main').forEach(a => {
-    const spec = scriptSpecFromText(a.answerScript || '');
+    const spec = scriptSpecFromText(a.answerScript || scriptForText(a.planned || ''), a.planned);
     if (spec) {
       a.training = spec;
       map[a.id] = spec;
@@ -4190,23 +4437,22 @@ function buildTrainingSpecs(ss) {
   ss.trainingSpecs = map;
 }
 function stageMaterialHtml(q, stage) {
-  const spec = q?.training || scriptSpecFromText(q?.answerScript || '');
+  const spec = q?.training || scriptSpecFromText(q?.answerScript || '', q?.text || q?.planned);
   if (stage === 3) return '<div class="stage-rule">3단계 · 무힌트 — 질문만 보고 실제 면접처럼 답하세요.</div>';
   if (!spec || (!spec.keywords?.length && !spec.outline?.length)) return '';
   if (stage === 1) return `<div class="stage-grid">
-    <div class="stage-box"><span class="label">핵심 키워드</span><div class="chips">${spec.keywords.map(k=>`<span class="chip">${esc(k)}</span>`).join('')}</div></div>
+    <div class="stage-box"><span class="label">핵심 키워드</span><div class="chips">${spec.keywords.slice(0,7).map(k=>`<span class="chip">${esc(k)}</span>`).join('')}</div></div>
     <div class="stage-box"><span class="label">답변 개요</span><ol class="stage-outline">${spec.outline.slice(0,5).map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>
   </div>`;
-  return `<div class="stage-box"><span class="label">핵심 키워드</span><div class="chips">${spec.keywords.map(k=>`<span class="chip">${esc(k)}</span>`).join('')}</div></div>`;
+  return `<div class="stage-box"><span class="label">핵심 키워드</span><div class="chips">${spec.keywords.slice(0,7).map(k=>`<span class="chip">${esc(k)}</span>`).join('')}</div></div>`;
 }
 function stagePrompt(ss, q, a, stage) {
-  const spec = q.training || scriptSpecFromText(q.answerScript || '') || { keywords:[], outline:[] };
+  const spec = q.training || scriptSpecFromText(q.answerScript || '', q.text || q.planned) || { keywords:[], outline:[] };
   return `너는 대학 입시 면접 코치다. 목표는 답변 스크립트 암기를 없애고 지원자가 자신의 말로 같은 핵심 내용을 설명하도록 만드는 것이다.
 ${profileCtx(ss.cfg)}
 [질문] ${q.text}
 [현재 단계] ${stage}단계
-[핵심 키워드] ${spec.keywords.join(', ')}
-[답변 개요] ${spec.outline.join(' → ')}
+${spec.keywords.length ? `[핵심 키워드] ${spec.keywords.join(', ')}\n[답변 개요] ${spec.outline.join(' → ')}` : '[답변 정리 없음] 정리해 둔 답변이 없는 질문이다. 질문에 맞게 답했는지, 구체적인 경험·근거가 있는지, 논리적으로 이어지는지로 평가하고 advance를 정한다.'}
 [이번 답변] ${a.text.slice(0,2200)}
 평가 원칙:
 - 문장이 1단계와 같지 않아도 된다.
@@ -4216,17 +4462,24 @@ ${profileCtx(ss.cfg)}
 - 다음 단계로 갈 수 있는지 판단할 때 핵심 내용 전달, 논리성, 자신의 말로 표현했는지, 질문 대응력을 우선한다.
 - stage 3에서는 힌트 없이도 핵심 내용이 유지되는지를 가장 중요하게 본다.
 JSON만 출력:
-{"advance":true|false,"core_preserved":true|false,"logic_ok":true|false,"natural":true|false,"script_like":true|false,"feedback":"짧은 피드백 1~2문장","missing":["빠진 핵심 내용 1~2개"],"hint":"다음 답변에서 기억할 최소 힌트. 문장 형태 금지, 키워드만."}
+{"score":0~100 정수 (이 답변의 내용 완성도),"advance":true|false,"core_preserved":true|false,"logic_ok":true|false,"natural":true|false,"script_like":true|false,"feedback":"짧은 피드백 1~2문장 (존댓말)","missing":["빠진 핵심 내용 1~2개"],"hint":"다음 답변에서 기억할 최소 힌트. 문장 형태 금지, 키워드만."}
 ${NO_FAB}`;
 }
 function validateStageShape(j) {
+  if (j && typeof j === 'object' && !('advance' in j) && 'pass' in j) j.advance = j.pass;
   assertSchemaBasics(j, STAGE_JSON_SCHEMA);
+  if (!String(j.feedback || '').trim()) throw new Error('피드백이 비어 있어요.');
   return j;
 }
+/* 답변 정리 키워드가 얼마나 들어갔는지 + 분량으로 낸 대략 점수 (AI가 없을 때) */
+function localStageScore(spec, coverage, a) {
+  if (a.skipped || !a.text) return null;
+  const len = Math.min(1, a.m.chars / 180);
+  return spec?.keywords?.length ? Math.round(clamp(35 + coverage * 45 + len * 20, 0, 100)) : Math.round(clamp(30 + len * 45, 0, 75));
+}
 async function evaluateStageAnswer(ss, q, a, stage) {
-  const localSpec = q.training || scriptSpecFromText(q.answerScript || '');
-  const norm = x => String(x||'').replace(/\s/g,'');
-  const hit = (localSpec?.keywords || []).filter(k => norm(a.text).includes(norm(k))).length;
+  const localSpec = q.training || scriptSpecFromText(q.answerScript || '', q.text || q.planned);
+  const hit = (localSpec?.keywords || []).filter(k => kwHit(k, a.text)).length;
   const coverage = localSpec?.keywords?.length ? hit / localSpec.keywords.length : 0;
   const local = {
     advance: localSpec ? (coverage >= (stage === 3 ? .45 : .4) && a.m.chars >= 45) : a.m.chars >= 45,
@@ -4236,29 +4489,32 @@ async function evaluateStageAnswer(ss, q, a, stage) {
     feedback: !localSpec
       ? (a.m.chars >= 45 ? '답변 흐름은 확인했어요. 이 질문은 별도 답변 정리가 없어 내용 암기 평가는 하지 않습니다.' : '답변이 짧았어요. 질문의 핵심부터 자신의 말로 다시 설명해 보세요.')
       : (coverage >= .4 ? '핵심 내용은 유지됐어요. 표현을 바꿔도 괜찮습니다.' : '핵심 내용 중 일부가 빠졌어요. 문장을 외우지 말고 빠진 키워드만 기억해 보세요.'),
-    missing: (localSpec?.keywords || []).filter(k => !norm(a.text).includes(norm(k))).slice(0,2),
-    hint: (localSpec?.keywords || []).filter(k => !norm(a.text).includes(norm(k))).slice(0,3).join(' · ')
+    missing: (localSpec?.keywords || []).filter(k => !kwHit(k, a.text)).slice(0,2),
+    hint: (localSpec?.keywords || []).filter(k => !kwHit(k, a.text)).slice(0,3).join(' · '),
+    score: localStageScore(localSpec, coverage, a), ai: false, aiError: ''
   };
-  if (!ss.cfg.ai || a.skipped || !localSpec) return local;
+  if (a.skipped) { local.feedback = '답변을 건너뛰었어요. 다음에는 핵심 한 가지라도 말해 보세요.'; return local; }
+  if (!ss.cfg.ai) return local;
   try {
-    const j = await requestStructured(stagePrompt(ss,q,a,stage), validateStageShape, { fast:true, maxTokens:700 });
+    const j = await requestStructured(stagePrompt(ss,q,a,stage), validateStageShape, { fast:true, maxTokens:1500, temperature:0 });
     return {
       ...local,
-      advance: !!j.advance,
-      core_preserved: !!j.core_preserved,
-      logic_ok: !!j.logic_ok,
-      natural: !!j.natural,
-      script_like: !!j.script_like,
-      feedback: String(j.feedback || local.feedback),
-      missing: Array.isArray(j.missing) ? j.missing.slice(0,2).map(String) : local.missing,
-      hint: String(j.hint || local.hint)
+      advance: boolOf(j.advance),
+      core_preserved: 'core_preserved' in j ? boolOf(j.core_preserved) : local.core_preserved,
+      logic_ok: 'logic_ok' in j ? boolOf(j.logic_ok) : local.logic_ok,
+      natural: 'natural' in j ? boolOf(j.natural) : local.natural,
+      script_like: boolOf(j.script_like),
+      feedback: politeOr(String(j.feedback || ''), local.feedback),
+      missing: j.missing != null ? listOf(j.missing).slice(0,2) : local.missing,
+      hint: String(j.hint || local.hint),
+      score: numScore(j.score) ?? local.score, ai: true
     };
   } catch (e) {
     console.warn('evaluateStageAnswer', e);
-    return local;
+    return { ...local, aiError: e.message || 'AI 평가 실패' };
   }
 }
-function startStageTraining(mode = 'auto', qId = null) {
+async function startStageTraining(mode = 'auto', qId = null) {
   const ss = S.lastInterview;
   if (!ss) return;
   buildTrainingSpecs(ss);
@@ -4277,6 +4533,8 @@ function startStageTraining(mode = 'auto', qId = null) {
   });
   let items = qId ? eligible : states.map(x=>x.q).slice(0, mode === '10min' ? 8 : 5);
   if (!items.length) return;
+  await ensureKeywords(items.map(x => x.answerScript));
+  items.forEach(x => { x.training = scriptSpecFromText(x.answerScript || '', x.text); });
   startSession('stage', {
     items: items.map(a => ({ ...a })),
     results: [],
@@ -4298,7 +4556,7 @@ async function stageFlow(run) {
     if (ss.maxDurationMs && nowT() >= ss.maxDurationMs / 1000) break;
 
     const q = items[i];
-    q.training = q.training || scriptSpecFromText(q.answerScript || '');
+    q.training = q.training || scriptSpecFromText(q.answerScript || '', q.text || q.planned);
     let state = getTrainingState(ss, q);
     let stage = clamp(state.stage || 1,1,3);
     let attemptsThisQuestion = 0;
@@ -4338,24 +4596,24 @@ async function stageFlow(run) {
         attempts:{...state.attempts,[stage]:(state.attempts?.[stage]||0)+1}
       });
       state = newState;
-      ss.results.push({qId:q.id, qText:q.text, stage, answer:a.text, evaluation:ev, nextStage, mastered, attempt:attemptsThisQuestion});
+      ss.results.push({qId:q.id, qText:q.text, stage, answer:a.text, ansId:a.id, skipped:!!a.skipped, evaluation:ev, nextStage, mastered, attempt:attemptsThisQuestion});
 
       if (mastered) {
         questionMastered = true;
-        showNote(`<div class="cn-head"><span class="label" style="color:var(--good)">3단계 독립 답변 성공</span><span class="stage-pill">완료</span></div><p>${esc(ev.feedback)}</p>`);
+        showNote(`<div class="cn-head"><span class="label" style="color:var(--good)">3단계 독립 답변 성공</span><span class="stage-pill">${ev.score != null ? ev.score + '점 · ' : ''}완료</span></div><p>${esc(ev.feedback)}</p>`);
         await coachLine('좋아요. 이 질문은 이제 문장 없이도 답할 수 있는 상태예요.', { no:'훈련 완료', sub:'다음 질문으로 넘어갑니다.' });
         break;
       }
 
       if (ev.advance && stage < 3) {
         stage = nextStage;
-        showNote(`<div class="cn-head"><span class="label" style="color:var(--accent)">${stage-1}단계 통과</span><span class="stage-pill">${stage}단계</span></div><p>${esc(ev.feedback)}</p>${ev.missing?.length ? `<p class="said">다음 단계에서 기억할 핵심: ${ev.missing.map(esc).join(' · ')}</p>` : ''}`);
+        showNote(`<div class="cn-head"><span class="label" style="color:var(--accent)">${stage-1}단계 통과</span><span class="stage-pill">${ev.score != null ? ev.score + '점 · ' : ''}${stage}단계</span></div><p>${esc(ev.feedback)}</p>${ev.missing?.length ? `<p class="said">다음 단계에서 기억할 핵심: ${ev.missing.map(esc).join(' · ')}</p>` : ''}`);
         await coachLine(`${stage-1}단계가 안정됐어요. 이제 ${stage}단계로 넘어갑니다.`, { no:'단계 상승', sub:'표현은 자유롭게 바꿔도 됩니다.' });
         continue;
       }
 
       // 실패/막힘: 같은 질문·같은 단계를 즉시 반복한다.
-      showNote(`<div class="cn-head"><span class="label" style="color:var(--warn)">같은 질문 한 번 더</span><span class="stage-pill">${stage}단계 · ${attemptsThisQuestion}/3</span></div><p>${esc(ev.feedback)}</p>${ev.missing?.length ? `<p class="said">이번에는 이것만 기억: ${ev.missing.map(esc).join(' · ')}</p>` : ''}`);
+      showNote(`<div class="cn-head"><span class="label" style="color:var(--warn)">같은 질문 한 번 더</span><span class="stage-pill">${ev.score != null ? ev.score + '점 · ' : ''}${stage}단계 · ${attemptsThisQuestion}/3</span></div><p>${esc(ev.feedback)}</p>${ev.missing?.length ? `<p class="said">이번에는 이것만 기억: ${ev.missing.map(esc).join(' · ')}</p>` : ''}`);
       await coachLine('괜찮아요. 방금 질문을 그대로 한 번 더 연습하겠습니다.', { no:'반복 연습', sub:'문장을 외우지 말고 핵심만 떠올려 보세요.' });
     }
 
@@ -4367,43 +4625,70 @@ async function stageFlow(run) {
   updateProgress(completedQuestions, items.length, '훈련 마무리');
   finishSession(false);
 }
-function finishStageSession() {
+async function finishStageSession() {
   const ss = S.session;
   ss.duration = nowT();
-  const mastered = (ss.results || []).filter(r=>r.mastered).length;
+  ss.answers.forEach(a => { try { a.m = analyzeAnswer(a); } catch {} });
+  const failed = (ss.results || []).filter(r => !r.skipped && !r.evaluation?.ai && ss.cfg.ai);
+  if (failed.length) {
+    showLoading('훈련 피드백을 정리하고 있어요', `AI 평가를 받지 못한 답변 ${failed.length}개를 다시 평가하고 있어요.`);
+    for (const r of failed) {
+      const a = ss.answers.find(x => x.id === r.ansId) || { text: r.answer, m: { chars: (r.answer || '').length, fillerN: 0, restarts: 0 }, skipped: false };
+      const q = (ss.items || []).find(x => x.id === r.qId) || { text: r.qText };
+      const ev = await evaluateStageAnswer(ss, q, a, r.stage);
+      if (ev.ai) r.evaluation = { ...ev, advance: r.evaluation.advance };     // 단계 진행은 훈련 중 판단 그대로, 점수·피드백만 채움
+    }
+  }
+  const res = ss.results || [];
+  const mastered = res.filter(r=>r.mastered).length;
+  const sc = res.map(r => r.evaluation?.score).filter(v => v != null);
+  ss.avgScore = sc.length ? Math.round(avg(sc)) : null;
+  ss.aiMissing = ss.cfg.ai ? res.filter(r => !r.skipped && !r.evaluation?.ai).length : 0;
   saveSessionSnapshot(ss);
   ss.histId ||= 's' + ss.startedAt;
   putHistory({ id:ss.histId, kind:'stage', date:ss.startedAt, label:'암기 방지 훈련',
-    before:null, after:mastered, items:(ss.results||[]).length,
+    before:null, after:mastered, score: ss.avgScore, items:res.length,
     weak:[{key:'stage',label:'1→2→3 단계 훈련'}],
-    results:(ss.results||[]).map(r=>({qId:r.qId,stage:r.stage,nextStage:r.nextStage,mastered:r.mastered}))
+    results:res.map(r=>({qId:r.qId,stage:r.stage,nextStage:r.nextStage,mastered:r.mastered,score:r.evaluation?.score ?? null}))
   });
+  recordPractice(ss);
   syncSession(ss);
   renderHistoryBox();
   renderStageReport(ss);
 }
 function renderStageReport(ss) {
   const completed = ss.results || [];
-  let h = `<header class="rep-head"><div class="score"><span class="num">${completed.filter(x=>x.mastered).length}</span><span class="of">독립 답변 완료</span></div>
-    <div><p class="rep-meta">암기 방지 훈련 · ${completed.length}회 답변 · ${fmt(ss.duration || 0)}</p>
-    <p class="rep-summary">${completed.length ? '문장을 외우는 대신 핵심 내용을 유지하면서 표현을 바꾸는 연습을 했습니다.' : '완료한 훈련이 없습니다.'}</p></div></header>`;
-  h += `<section class="panel"><div class="sec-title"><h3>이번 훈련 결과</h3><span class="label">단계는 자동 관리 · 회귀하지 않음</span></div><div class="qlist">`;
-  completed.forEach((r,i)=>{
-    h += `<details class="qitem"${i===0?' open':''}><summary><span class="qs">${r.stage}→${r.nextStage}</span><span class="qt"><b>${esc(r.qText)}</b><span>${r.mastered?'3단계 독립 답변 성공':'다음 연습 단계 '+r.nextStage}</span></span><span class="chev">›</span></summary>
-      <div class="qbody"><div class="row"><span class="label">답변</span><p class="quote">${esc(r.answer)}</p></div>
-      <div class="row"><span class="label">코치 피드백</span><p>${esc(r.evaluation.feedback)}</p></div>
-      ${r.evaluation.missing?.length?`<div class="row"><span class="label">최소 힌트</span><p class="said">${r.evaluation.missing.map(esc).join(' · ')}</p></div>`:''}
+  const sc = completed.map(r => r.evaluation?.score).filter(v => v != null);
+  const avgS = ss.avgScore ?? (sc.length ? Math.round(avg(sc)) : null);
+  const mastered = completed.filter(x => x.mastered).length;
+  // 같은 질문의 여러 회차를 한 묶음으로
+  const groups = [];
+  completed.forEach(r => { let g = groups.find(x => x.qText === r.qText); if (!g) groups.push(g = { qText: r.qText, tries: [] }); g.tries.push(r); });
+  let h = `<header class="rep-head"><div class="score"><span class="num">${avgS ?? '–'}</span><span class="of">${avgS != null ? '평균 점수' : '점수 없음'}</span><span class="grade g-${band(avgS)}">독립 답변 ${mastered}개 완료</span></div>
+    <div><p class="rep-meta">암기 방지 훈련 · 질문 ${groups.length}개 · 답변 ${completed.length}회 · ${fmt(ss.duration || 0)}</p>
+    <p class="rep-summary">${completed.length ? '문장을 외우는 대신 핵심 내용을 유지하면서 표현을 바꾸는 연습을 했습니다. 질문마다 회차별 점수와 피드백을 확인해 보세요.' : '완료한 훈련이 없습니다.'}</p>
+    ${!ss.cfg.ai ? '<p class="notice warn" style="margin-top:10px">AI 연결 없이 진행해서 점수는 답변 정리 키워드와 분량으로 낸 추정치예요.</p>' : ss.aiMissing ? `<p class="notice warn" style="margin-top:10px">답변 ${ss.aiMissing}개는 AI 평가를 받지 못해 추정 점수로 표시했어요. <button class="btn small" type="button" id="btn-stage-reeval">AI 평가 다시 받기</button></p>` : ''}</div></header>`;
+  h += `<section class="panel"><div class="sec-title"><h3>질문별 훈련 결과</h3><span class="label">단계는 자동 관리 · 내려가지 않음</span></div><div class="qlist">`;
+  groups.forEach((g, i) => {
+    const last = g.tries[g.tries.length - 1], ls = last.evaluation?.score ?? null, first = g.tries[0].evaluation?.score ?? null;
+    h += `<details class="qitem"${i === 0 ? ' open' : ''}><summary><span class="qs g-${band(ls)}">${ls ?? '–'}</span><span class="qt"><b>${esc(g.qText)}</b><span>${last.mastered ? '3단계 독립 답변 성공' : `${g.tries[0].stage}단계 → 다음 ${last.nextStage}단계`} · ${g.tries.length}회${g.tries.length > 1 && first != null && ls != null ? ` · ${first}→${ls}점` : ''}</span></span><span class="chev">›</span></summary>
+      <div class="qbody">${g.tries.map((r, k) => `<div class="try"><div class="try-h"><b>${k + 1}회차 · ${r.stage}단계</b><span>${r.evaluation?.score != null ? `<span class="grade g-${band(r.evaluation.score)}">${r.evaluation.score}점</span>` : ''}<span class="src-tag">${r.skipped ? '건너뜀' : r.evaluation?.ai ? 'AI 평가' : '추정'}</span>${r.nextStage > r.stage ? '<span class="src-tag ok">단계 통과</span>' : r.mastered ? '<span class="src-tag ok">독립 답변 성공</span>' : ''}</span></div>
+        <div class="row"><span class="label">답변</span><p class="quote">${esc(r.answer || '(답변 없음)')}</p></div>
+        <div class="row"><span class="label" style="color:var(--accent)">코치 피드백</span><p>${esc(r.evaluation?.feedback || '')}</p></div>
+        ${r.evaluation?.missing?.length ? `<div class="row"><span class="label" style="color:var(--warn)">빠진 핵심</span><p class="said">${r.evaluation.missing.map(esc).join(' · ')}</p></div>` : ''}</div>`).join('')}
       </div></details>`;
   });
   h += `</div></section>`;
-  $('#report-body').innerHTML=h;
+  $('#report-body').innerHTML = h;
+  const re = $('#btn-stage-reeval');
+  if (re) re.onclick = async () => { re.disabled = true; re.textContent = '평가 받는 중…'; S.session = ss; await finishStageSession(); };
   finishRender(ss,[
     '<button class="btn primary" type="button" data-stage-train="10min">다시 10분 반복 훈련</button>',
-    '<button class="btn" type="button" id="btn-back-report">면접 리포트로 돌아가기</button>',
-    '<button class="btn" type="button" id="btn-home">준비 화면으로</button>'
+    S.lastInterview ? '<button class="btn" type="button" id="btn-back-report">면접 리포트로 돌아가기</button>' : '',
+    '<button class="btn" type="button" id="btn-copy">텍스트로 복사</button>',
+    '<button class="btn ghost" type="button" id="btn-home">준비 화면으로</button>'
   ]);
 }
-
 /* =====================================================================
    약점 집중훈련
    ===================================================================== */
@@ -4436,9 +4721,10 @@ function startDrill(key) {
   startSession('drill', { weakKey: key, items, results: [], prevInterviewId: ss.histId });
 }
 async function drillEval(key, q, a, stage, prev) {
-  const W = WEAK[key], local = weakScore(key, a, S.cfg.target);
-  const out = { score: local, feedback: '', quote: '', follow_up: W.follow, improved: '', remaining: '', tip: W.tip };
-  if (!S.cfg.ai || a.skipped) {
+  const W = WEAK[key], local = a.skipped ? null : weakScore(key, a, S.cfg.target);
+  const out = { score: local, feedback: '', quote: '', follow_up: W.follow, improved: '', remaining: '', tip: W.tip, ai: false, aiError: '', skipped: !!a.skipped };
+  if (a.skipped) { out.feedback = stage === 1 ? `답변을 건너뛰었어요. ${W.tip}` : '재답변을 건너뛰었어요.'; return out; }
+  if (!S.cfg.ai) {
     if (stage === 1) out.feedback = local == null ? `이 약점은 AI가 연결돼야 평가할 수 있어요. 팁: ${W.tip}` : `${W.label} 점수는 ${local}점이에요. ${W.tip}`;
     else out.feedback = local == null ? '재답변을 마쳤어요. 녹음을 들으며 스스로 비교해 보세요.' : `재답변 ${local}점 (1차 ${prev?.score ?? '–'}점).`;
     return out;
@@ -4473,15 +4759,22 @@ ${profileCtx(S.cfg)}
 할 일: 같은 기준으로 재답변을 평가하고 1차와 비교한다.
 JSON만: {"score":정수,"improved":"나아진 점 1문장 (없으면 빈 문자열)","remaining":"아직 남은 문제 1문장 (없으면 빈 문자열)","tip":"다음 연습 팁 1문장","feedback":"코치가 말로 전할 짧은 총평 1문장"}`;
     }
-    const j = parseJSON(await callClaude(prompt, { fast: stage === 1, maxTokens: 600 }));
+    const j = parseJSON(await callClaude(prompt, { fast: stage === 1, maxTokens: 1500, temperature: 0 }));
+    const js = numScore(j.score);
+    if (js == null && !String(j.feedback || '').trim()) throw new Error('점수와 피드백이 비어 있어요.');
     Object.assign(out, {
-      score: local != null && W.t === 'd' ? Math.round((local + (+j.score || local)) / 2) : (Number.isFinite(+j.score) ? Math.round(+j.score) : local),
+      ai: true,
+      score: local != null && W.t === 'd' ? Math.round((local + (js ?? local)) / 2) : (js ?? local),
       feedback: politeOr(String(j.feedback || ''), stage === 1 ? `${W.label} 부분을 한 번 더 다듬어 보겠습니다. ${W.tip}` : '재답변을 잘 들었습니다.'),
       quote: String(j.quote || ''),
       follow_up: (() => { const f = asQuestion(String(j.follow_up || '')); return f && politeOK(f) && !sameQuestion(f, q.text) ? f : W.follow; })(),
       improved: String(j.improved || ''), remaining: String(j.remaining || ''), tip: String(j.tip || W.tip)
     });
-  } catch (e) { console.warn('drillEval', e); out.feedback = out.feedback || W.tip; }
+  } catch (e) {
+    console.warn('drillEval', e);
+    out.aiError = e.message || 'AI 평가 실패';
+    out.feedback = local != null ? `${W.label} 점수는 ${local}점이에요 (측정값 기준). ${W.tip}` : `AI 평가를 받지 못했어요. 훈련이 끝나면 다시 받아 볼게요. 팁: ${W.tip}`;
+  }
   return out;
 }
 function showNote(html) { const n = $('#coach-note'); n.innerHTML = html; n.hidden = false; }
@@ -4519,25 +4812,38 @@ async function drillFlow(run) {
   }
   finishSession(false);
 }
-function finishDrill() {
+async function finishDrill() {
   const ss = S.session;
-  ss.answers.forEach(a => a.m = analyzeAnswer(a));
-  // 녹음 종료 후 측정값으로 말하기 점수 갱신
+  ss.answers.forEach(a => { try { a.m = analyzeAnswer(a); } catch {} });
+  const W = WEAK[ss.weakKey];
+  // 녹음 종료 후 측정값으로 말하기 점수 갱신 (AI 없을 때)
   (ss.results || []).forEach(r => {
-    if (WEAK[ss.weakKey].t === 'd') {
-      const s1 = weakScore(ss.weakKey, r.a1, ss.cfg.target), s2 = weakScore(ss.weakKey, r.a2, ss.cfg.target);
-      if (s1 != null && !ss.cfg.ai) { r.e1.score = s1; r.e2.score = s2; }
+    if (W.t === 'd' && !ss.cfg.ai) {
+      if (!r.a1.skipped) r.e1.score = weakScore(ss.weakKey, r.a1, ss.cfg.target);
+      if (!r.a2.skipped) r.e2.score = weakScore(ss.weakKey, r.a2, ss.cfg.target);
     }
   });
+  // AI 평가를 못 받은 답변은 리포트 전에 한 번 더 받음
+  const miss = ss.cfg.ai ? (ss.results || []).flatMap(r => [[r, 1], [r, 2]]).filter(([r, k]) => !r['a' + k].skipped && !r['e' + k].ai) : [];
+  if (miss.length) {
+    showLoading('훈련 리포트를 정리하고 있어요', `AI 평가를 받지 못한 답변 ${miss.length}개를 다시 평가하고 있어요.`);
+    for (const [r, k] of miss) {
+      const ev = await drillEval(ss.weakKey, r.q, r['a' + k], k, k === 2 ? r.e1 : undefined);
+      if (ev.ai) { const keep = k === 1 ? { follow_up: r.e1.follow_up, ans: r.e1.ans, followAns: r.e1.followAns } : {}; r['e' + k] = { ...ev, ...keep }; }
+    }
+  }
   const res = ss.results || [];
   const b = res.map(r => r.e1.score).filter(v => v != null), a = res.map(r => r.e2.score).filter(v => v != null);
   ss.before = b.length ? Math.round(avg(b)) : null; ss.after = a.length ? Math.round(avg(a)) : null;
+  ss.aiMissing = ss.cfg.ai ? res.reduce((n, r) => n + (!r.a1.skipped && !r.e1.ai ? 1 : 0) + (!r.a2.skipped && !r.e2.ai ? 1 : 0), 0) : 0;
   if (res.length) {
     ss.histId ||= 'd' + ss.startedAt;
-    putHistory({ id: ss.histId, kind: 'drill', date: ss.startedAt, weakKey: ss.weakKey, label: WEAK[ss.weakKey].label, before: ss.before, after: ss.after, items: res.length,
-      weak: [{ key: ss.weakKey, label: WEAK[ss.weakKey].label }] });
+    putHistory({ id: ss.histId, kind: 'drill', date: ss.startedAt, weakKey: ss.weakKey, label: W.label, before: ss.before, after: ss.after, items: res.length,
+      weak: [{ key: ss.weakKey, label: W.label }] });
     saveSessionSnapshot(ss);
+    recordPractice(ss);
   }
+  renderHistoryBox();
   renderDrillReport(ss);
 }
 function renderDrillReport(ss) {
@@ -4549,11 +4855,12 @@ function renderDrillReport(ss) {
       <p class="rep-summary">${res.length ? (ss.before != null && ss.after != null ? (ss.after - ss.before >= 5 ? `재답변에서 평균 ${ss.after - ss.before}점이 올랐어요. 같은 방식으로 다른 질문에도 적용해 보세요.` : ss.after - ss.before <= -5 ? '재답변에서 오히려 점수가 내려갔어요. 피드백을 한 가지씩만 적용해 보세요.' : '1차와 재답변의 차이가 크지 않았어요. 아래 "남은 문제"를 하나만 골라 다시 연습해 보세요.') : '훈련을 마쳤어요. 아래에서 1차 답변과 재답변을 비교해 보세요.') : '완료한 훈련 질문이 없어요.'}</p>
       ${prevDrill ? `<div class="split"><span>지난 같은 훈련 <b>${prevDrill.before ?? '–'}→${prevDrill.after ?? '–'}</b></span><span>이번 1차 ${deltaChip(ss.before, prevDrill.before)} (지난 훈련 1차 대비)</span></div>` : ''}
       ${!ss.cfg.ai && W.t === 'c' ? '<p class="notice warn" style="margin-top:10px">내용 약점은 AI가 연결돼야 점수를 매길 수 있어요. 녹음과 받아쓰기로 직접 비교해 보세요.</p>' : ''}
+      ${ss.aiMissing ? `<p class="notice warn" style="margin-top:10px">답변 ${ss.aiMissing}개는 AI 평가를 받지 못했어요. <button class="btn small" type="button" id="btn-drill-reeval">AI 평가 다시 받기</button></p>` : ''}
     </div></header>`;
   h += `<section><div class="sec-title"><h3>질문별 훈련 결과</h3><span class="label">1차 → 꼬리질문 → 재답변</span></div><div class="qlist">`;
   res.forEach((r, i) => {
     const s1 = r.e1.score, s2 = r.e2.score, m1 = r.a1.m, m2 = r.a2.m;
-    h += `<details class="qitem"${i === 0 ? ' open' : ''}><summary><span class="qs g-${band(s2)}">${s2 ?? '–'}</span><span class="qt"><b>${esc(r.q.text)}</b><span>1차 ${s1 ?? '–'} → 재답변 ${s2 ?? '–'}</span></span><span class="chev" aria-hidden="true">›</span></summary>
+    h += `<details class="qitem"${i === 0 ? ' open' : ''}><summary><span class="qs g-${band(s2)}">${s2 ?? '–'}</span><span class="qt"><b>${esc(r.q.text)}</b><span>1차 ${r.a1.skipped ? '건너뜀' : s1 ?? '–'} → 재답변 ${r.a2.skipped ? '건너뜀' : s2 ?? '–'}</span></span><span class="chev" aria-hidden="true">›</span></summary>
       <div class="qbody">
         <div class="cmp"><div class="bars">
           <div><span>1차</span><span class="t"><i class="fill-${band(s1)}" style="width:${s1 ?? 0}%"></i></span><b>${s1 ?? '–'}</b></div>
@@ -4577,6 +4884,8 @@ function renderDrillReport(ss) {
   });
   h += `</div></section>` + playerHtml(ss);
   $('#report-body').innerHTML = h;
+  const rb = $('#btn-drill-reeval');
+  if (rb) rb.onclick = async () => { rb.disabled = true; rb.textContent = '평가 받는 중…'; S.session = ss; await finishDrill(); };
   finishRender(ss, [
     `<button class="btn primary" type="button" data-drill="${ss.weakKey}">같은 약점 다시 훈련</button>`,
     S.lastInterview ? '<button class="btn" type="button" id="btn-back-report">면접 리포트로 돌아가기</button>' : '',
@@ -4613,10 +4922,10 @@ async function startInterview(list) {
   if (!qs.length) { selectTab('tab-q'); $('#question-plan-out').textContent = '물을 질문이 없어요. "고급 설정 → 분류별로 물을 개수"를 확인해 주세요.'; return; }
   markAsked(qs);
 
-  // 훈련 힌트는 준비 화면에 직접 입력한 답변 정리에서만 생성합니다.
-  // AI 준비 호출을 없애 시작 시 충돌/지연을 줄이고, 꼬리질문처럼 스크립트가 없는 질문은 비워 둡니다.
+  // 힌트 키워드: 내 키워드 메모 → AI가 뽑은 키워드 → 자동 추출 순. AI 키워드가 아직 없으면 시작 전에 잠깐 준비
+  await ensureKeywords(qs.map(q => q.answerScript));
   qs.forEach(q => {
-    q.training = scriptSpecFromText(q.answerScript || '');
+    q.training = scriptSpecFromText(q.answerScript || '', q.text);
   });
 
   const stage = +($('input[name=trainingStage]:checked')?.value || 2);
